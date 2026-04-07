@@ -2,8 +2,6 @@
 
 ArcGate is an API marketplace where AI agents pay $0.001 USDC per call. Payments settle onchain via Arc in under one second — no subscriptions, no invoices, no credit cards.
 
-Built for the [Agentic Commerce on Arc](https://lablab.ai/event/agentic-commerce-on-arc) hackathon.
-
 ---
 
 ## The problem
