@@ -3,2132 +3,1423 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARC Invoice — Stablecoin Payments for Business</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<title>ArcGate — API Marketplace on Arc</title>
+<meta name="description" content="Pay-per-call Pay-per-call API gateway built on Arc. $0.001 USDC per request, settled in under 350ms.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-:root {
-  --ink: #0f1117;
-  --ink2: #1e2230;
-  --ink3: #2d3348;
-  --mid: #6b7280;
-  --muted: #9ca3af;
-  --line: #e5e7eb;
-  --line2: #f3f4f6;
-  --page: #f9fafb;
-  --white: #ffffff;
-  --green: #059669;
-  --green-l: #d1fae5;
-  --green-d: #047857;
-  --amber: #d97706;
-  --amber-l: #fef3c7;
-  --red: #dc2626;
-  --red-l: #fee2e2;
-  --blue: #2563eb;
-  --blue-l: #dbeafe;
-  --arc: #0f1117;
-  --r: 10px;
-  --r-sm: 6px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+:root{
+  /* ARC-inspired: deep navy, not pure black */
+  --bg:    #0a0e1a;
+  --bg1:   #0d1120;
+  --bg2:   #111728;
+  --bg3:   #161d30;
+  --bg4:   #1c2438;
+  --bg5:   #232c44;
+
+  /* Borders — subtle blue tint */
+  --b1: rgba(99,130,255,0.10);
+  --b2: rgba(99,130,255,0.16);
+  --b3: rgba(99,130,255,0.24);
+
+  /* Text */
+  --t1: #f0f2ff;
+  --t2: #8b93b8;
+  --t3: #4f5880;
+  --t4: #2e3554;
+
+  /* ARC blue — the main accent */
+  --blue:   #4b8bff;
+  --blue2:  #6ba3ff;
+  --blue-d: rgba(75,139,255,0.08);
+  --blue-b: rgba(75,139,255,0.18);
+  --blue-g: rgba(75,139,255,0.30);
+
+  /* Status */
+  --grn:   #34d399;
+  --grn-d: rgba(52,211,153,0.08);
+  --grn-b: rgba(52,211,153,0.18);
+  --red:   #f87171;
+  --red-d: rgba(248,113,113,0.08);
+  --red-b: rgba(248,113,113,0.18);
+  --amb:   #fbbf24;
+  --amb-d: rgba(251,191,36,0.08);
+
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+  --r:  6px;
+  --r2: 10px;
+  --r3: 14px;
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--page);
-  color: var(--ink);
-  min-height: 100vh;
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--t1);
+  font-size: 13.5px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  /* Subtle noise texture like ARC */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
-/* ── LAYOUT ── */
-.app { display: flex; min-height: 100vh; }
+/* ── Layout ──────────────────────────────── */
+.shell { display: flex; min-height: 100vh; }
 
+/* ── Sidebar ─────────────────────────────── */
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: var(--ink);
+  background: var(--bg1);
+  border-right: 1px solid var(--b1);
+  position: fixed;
+  inset: 0 auto 0 0;
   display: flex;
   flex-direction: column;
-  padding: 0;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
   z-index: 100;
 }
 
-.sidebar-logo {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.logo-mark {
+.brand {
+  padding: 20px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
+  border-bottom: 1px solid var(--b1);
+  cursor: pointer;
 }
 
-.logo-icon {
+.brand-icon {
   width: 32px; height: 32px;
-  background: #fff;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(75,139,255,0.28);
+  overflow: hidden;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--t1);
   letter-spacing: -0.02em;
 }
 
-.logo-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-
-.logo-sub {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.08em;
+.brand-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 0.1em;
   margin-top: 1px;
+  opacity: 0.8;
 }
 
-.sidebar-nav {
-  flex: 1;
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+
+.nav-section {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--t4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 8px 4px;
 }
 
-.nav-item {
+.nav-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 7px;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 400;
-  transition: all 0.15s;
-  border: none;
+  gap: 9px;
+  padding: 7.5px 10px;
+  border-radius: var(--r);
+  color: var(--t3);
+  font-size: 13px;
   background: none;
+  border: none;
   width: 100%;
   text-align: left;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  position: relative;
 }
 
-.nav-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
-.nav-item.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 500; }
-
-.nav-icon { font-size: 15px; width: 18px; text-align: center; }
-
-.sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+.nav-btn:hover { color: var(--t2); background: rgba(99,130,255,0.05); }
+.nav-btn.on { color: var(--t1); background: var(--bg3); }
+.nav-btn.on::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 2px; height: 14px;
+  background: var(--blue);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--blue-g);
 }
 
-.network-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.nav-icon { width: 16px; text-align: center; font-size: 14px; flex-shrink: 0; opacity: 0.55; }
+.nav-btn.on .nav-icon { opacity: 1; }
+
+/* Network status */
+.sb-foot { padding: 12px 14px 16px; border-top: 1px solid var(--b1); }
+
+.net-card {
   padding: 10px 12px;
-  border-radius: 7px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  margin-bottom: 12px;
 }
 
-.net-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  flex-shrink: 0;
-  box-shadow: 0 0 6px #10b981;
-  animation: pulse 2s infinite;
-}
+.net-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.net-label { font-family: var(--mono); font-size: 9px; color: var(--t3); letter-spacing: 0.1em; }
+.net-live { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9px; color: var(--grn); }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--grn); animation: blink 2.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 55%{opacity:0.2} }
+.net-stat { display: flex; justify-content: space-between; font-size: 11px; color: var(--t3); margin-top: 3px; }
+.net-stat span:last-child { font-family: var(--mono); font-size: 10px; color: var(--t2); }
 
-@keyframes pulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
+.sb-bal-label { font-size: 11px; color: var(--t3); margin-bottom: 3px; }
+.sb-bal-value { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--t1); letter-spacing: -0.02em; }
+.sb-bal-value small { font-size: 10px; color: var(--t3); margin-left: 3px; font-weight: 400; }
 
-.net-text { font-size: 11px; color: rgba(255,255,255,0.45); font-family: 'DM Mono', monospace; }
-.net-name { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
+/* ── Main ────────────────────────────────── */
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
 
-/* ── MAIN ── */
-.main {
-  margin-left: 220px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
-  padding: 0 32px;
-  height: 56px;
+/* ── Header ──────────────────────────────── */
+.header {
+  height: 48px;
+  background: rgba(10,14,26,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--b1);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  padding: 0 24px;
+  position: sticky; top: 0; z-index: 50;
 }
 
-.topbar-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
+.hdr-path { font-family: var(--mono); font-size: 11px; color: var(--t3); }
+.hdr-path em { color: var(--t2); font-style: normal; }
+.hdr-right { display: flex; align-items: center; gap: 8px; }
 
-.topbar-right { display: flex; align-items: center; gap: 10px; }
-
-.btn {
+/* ── Chips ───────────────────────────────── */
+.chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  border-radius: var(--r-sm);
-  font-size: 13px;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: var(--mono);
+  font-size: 10px;
   font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  font-family: 'DM Sans', sans-serif;
-  line-height: 1;
+  white-space: nowrap;
 }
+.ch-blue { background: var(--blue-d); color: var(--blue2); border: 1px solid var(--blue-b); }
+.ch-grn  { background: var(--grn-d);  color: var(--grn);   border: 1px solid var(--grn-b); }
+.ch-dim  { background: var(--bg3);    color: var(--t3);    border: 1px solid var(--b1); }
+.ch-amb  { background: var(--amb-d);  color: var(--amb);   border: 1px solid rgba(251,191,36,0.2); }
+.ch-red  { background: var(--red-d);  color: var(--red);   border: 1px solid var(--red-b); }
 
-.btn-primary {
-  background: var(--ink);
-  color: #fff;
-}
-.btn-primary:hover { background: var(--ink2); }
+/* ── Pages ───────────────────────────────── */
+.page { padding: 28px 24px; display: none; }
+.page.on { display: block; }
 
-.btn-secondary {
-  background: var(--white);
-  color: var(--ink);
-  border: 1px solid var(--line);
-}
-.btn-secondary:hover { background: var(--line2); }
+.pg-head { margin-bottom: 24px; }
+.pg-title { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; color: var(--t1); }
+.pg-sub { font-size: 13px; color: var(--t3); margin-top: 4px; }
 
-.btn-green {
-  background: var(--green);
-  color: #fff;
-}
-.btn-green:hover { background: var(--green-d); }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--mid);
-  padding: 8px 10px;
-}
-.btn-ghost:hover { background: var(--line2); color: var(--ink); }
-
-.btn-sm { padding: 5px 11px; font-size: 12px; }
-.btn-lg { padding: 12px 24px; font-size: 14px; }
-
-/* ── CONTENT ── */
-.content { padding: 32px; flex: 1; }
-
-/* ── CARDS ── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-
-.card-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-
-.card-body { padding: 24px; }
-
-/* ── STATS ── */
+/* ── Stats ───────────────────────────────── */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 10px;
   margin-bottom: 24px;
 }
 
 .stat-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  padding: 20px 22px;
-  box-shadow: var(--shadow);
-}
-
-.stat-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 10px;
-}
-
-.stat-value {
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  font-family: 'DM Mono', monospace;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-
-.stat-sub {
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-up { color: var(--green); }
-.stat-down { color: var(--red); }
-
-/* ── TABLE ── */
-.table-wrap { overflow-x: auto; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead tr {
-  border-bottom: 1px solid var(--line);
-}
-
-thead th {
-  padding: 10px 16px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--line2);
-  transition: background 0.1s;
-}
-
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(--line2); }
-
-tbody td {
-  padding: 13px 16px;
-  font-size: 13.5px;
-  color: var(--ink);
-  vertical-align: middle;
-}
-
-.td-mono {
-  font-family: 'DM Mono', monospace;
-  font-size: 12.5px;
-  color: var(--mid);
-}
-
-/* ── BADGES ── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-.badge-green { background: var(--green-l); color: var(--green-d); }
-.badge-amber { background: var(--amber-l); color: var(--amber); }
-.badge-red { background: var(--red-l); color: var(--red); }
-.badge-blue { background: var(--blue-l); color: var(--blue); }
-.badge-gray { background: var(--line2); color: var(--mid); }
-
-.badge-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* ── FORM ── */
-.form-grid { display: grid; gap: 16px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-.field { display: flex; flex-direction: column; gap: 6px; }
-
-.field label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--mid);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.field input,
-.field select,
-.field textarea {
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  font-size: 13.5px;
-  color: var(--ink);
-  background: var(--white);
-  font-family: 'DM Sans', sans-serif;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  outline: none;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(15,17,23,0.06);
-}
-
-.field textarea { resize: vertical; min-height: 80px; }
-
-.field-mono input {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-}
-
-/* ── LINE ITEMS ── */
-.line-items { display: flex; flex-direction: column; gap: 0; }
-
-.li-header {
-  display: grid;
-  grid-template-columns: 1fr 80px 100px 100px 36px;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 4px;
-}
-
-.li-header span {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.li-row {
-  display: grid;
-  grid-template-columns: 1fr 80px 100px 100px 36px;
-  gap: 8px;
-  padding: 6px 0;
-  align-items: center;
-  border-bottom: 1px solid var(--line2);
-}
-
-.li-row:last-child { border-bottom: none; }
-
-.li-row input {
-  padding: 7px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
-  outline: none;
-  width: 100%;
-  color: var(--ink);
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  padding: 17px 18px;
   transition: border-color 0.15s;
 }
+.stat-card:hover { border-color: var(--b2); }
+.stat-lbl { font-family: var(--mono); font-size: 9px; color: var(--t3); letter-spacing: 0.1em; margin-bottom: 9px; }
+.stat-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--t1); letter-spacing: -0.03em; margin-bottom: 4px; }
+.stat-sub { font-size: 11px; color: var(--t3); }
 
-.li-row input:focus { border-color: var(--ink3); }
-.li-total { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--ink); padding: 0 4px; }
-
-.li-del {
-  width: 30px; height: 30px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 5px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--muted);
-  font-size: 16px;
-  transition: all 0.15s;
+/* ── Card ────────────────────────────────── */
+.card {
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
 }
-.li-del:hover { background: var(--red-l); color: var(--red); }
+.card:hover { border-color: var(--b2); }
 
-.totals-box {
-  margin-top: 16px;
-  padding: 16px 20px;
-  background: var(--line2);
-  border-radius: var(--r-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.total-row {
-  display: flex;
-  gap: 32px;
-  font-size: 13px;
-}
-
-.total-row.grand {
-  font-size: 16px;
-  font-weight: 700;
-  font-family: 'DM Mono', monospace;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-  margin-top: 2px;
-}
-
-.total-label { color: var(--mid); min-width: 80px; text-align: right; }
-.total-val { min-width: 100px; text-align: right; font-family: 'DM Mono', monospace; color: var(--ink); }
-
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  animation: fadeIn 0.15s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-.modal {
-  background: var(--white);
-  border-radius: 14px;
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 560px;
-  animation: slideUp 0.2s ease;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--line);
+.card-head {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--b1);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+.card-title { font-size: 12.5px; font-weight: 600; color: var(--t1); display: flex; align-items: center; gap: 7px; }
+.card-body { padding: 18px; }
 
-.modal-title {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.modal-close {
-  width: 30px; height: 30px;
-  border: none; background: none;
-  cursor: pointer; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--mid);
-  font-size: 18px;
-  transition: all 0.15s;
-}
-.modal-close:hover { background: var(--line2); color: var(--ink); }
-
-.modal-body { padding: 24px; }
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-/* ── PAY PAGE ── */
-.pay-page {
-  min-height: 100vh;
-  background: var(--page);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 48px 24px;
-}
-
-.pay-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 480px;
-  overflow: hidden;
-}
-
-.pay-header {
-  padding: 28px 32px 24px;
-  border-bottom: 1px solid var(--line);
-}
-
-.pay-from {
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.pay-business {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  font-family: 'Instrument Serif', serif;
-}
-
-.pay-inv-num {
-  font-size: 12px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  margin-top: 4px;
-}
-
-.pay-amount-block {
-  padding: 28px 32px;
-  text-align: center;
-  border-bottom: 1px solid var(--line);
-  background: var(--ink);
-  color: #fff;
-}
-
-.pay-amount-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 10px;
-}
-
-.pay-amount {
-  font-size: 48px;
-  font-weight: 700;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  margin-bottom: 6px;
-}
-
-.pay-currency {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.05em;
-}
-
-.pay-body { padding: 24px 32px; }
-
-.pay-items {
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.pay-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 11px 14px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--line2);
-}
-.pay-item:last-child { border-bottom: none; }
-.pay-item-name { color: var(--ink); }
-.pay-item-amount { font-family: 'DM Mono', monospace; color: var(--mid); }
-
-.currency-tabs {
-  display: flex;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.currency-tab {
-  flex: 1;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  background: none;
-  color: var(--mid);
-  font-family: 'DM Mono', monospace;
-  transition: all 0.15s;
-  border-right: 1px solid var(--line);
-}
-
-.currency-tab:last-child { border-right: none; }
-.currency-tab.active { background: var(--ink); color: #fff; }
-.currency-tab:hover:not(.active) { background: var(--line2); }
-
-.wallet-input-wrap {
-  position: relative;
-  margin-bottom: 16px;
-}
-
-.wallet-input-wrap input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: var(--ink);
-  outline: none;
-}
-.wallet-input-wrap input:focus { border-color: var(--ink); }
-.wallet-input-wrap input::placeholder { color: var(--muted); }
-
-.pay-network-note {
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 12px;
-}
-
-.arc-badge-sm {
+/* ── Buttons ─────────────────────────────── */
+.btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 4px;
-  font-size: 10px;
-  font-family: 'DM Mono', monospace;
+  gap: 7px;
+  padding: 7px 15px;
+  border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.12s;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
 }
 
-/* ── LINK BOX ── */
-.link-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--line2);
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 0 0 0 transparent;
+}
+.btn-primary:hover {
+  background: var(--blue2);
+  box-shadow: 0 4px 16px rgba(75,139,255,0.35);
 }
 
-.link-url {
-  flex: 1;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: var(--mid);
-  overflow: hidden;
-  text-overflow: ellipsis;
+.btn-secondary { background: var(--bg3); color: var(--t2); border: 1px solid var(--b2); }
+.btn-secondary:hover { background: var(--bg4); color: var(--t1); border-color: var(--b3); }
+
+.btn-ghost { background: transparent; color: var(--t3); }
+.btn-ghost:hover { background: var(--bg3); color: var(--t2); }
+
+.btn-danger { background: transparent; color: var(--t3); }
+.btn-danger:hover { color: var(--red); background: var(--red-d); }
+
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn-lg { padding: 11px 22px; font-size: 14px; }
+.btn-block { width: 100%; justify-content: center; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+/* ── Table ───────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { border-bottom: 1px solid var(--b1); }
+thead th {
+  padding: 9px 16px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   white-space: nowrap;
 }
+tbody tr { border-bottom: 1px solid rgba(99,130,255,0.04); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(99,130,255,0.03); }
+tbody td { padding: 11px 16px; font-size: 12.5px; vertical-align: middle; }
+.cell-mono { font-family: var(--mono); font-size: 11px; color: var(--t3); }
 
-/* ── INVOICE PREVIEW ── */
-.inv-preview {
-  border: 1px solid var(--line);
+/* ── Form ────────────────────────────────── */
+.form-stack { display: flex; flex-direction: column; gap: 14px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-size: 11.5px; font-weight: 500; color: var(--t2); }
+.field input, .field select, .field textarea {
+  padding: 8px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--b1);
   border-radius: var(--r);
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--t1);
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--blue-b);
+  box-shadow: 0 0 0 3px rgba(75,139,255,0.07);
+}
+.field input::placeholder { color: var(--t4); }
+.field textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+.mono-field input, .mono-field textarea { font-family: var(--mono); font-size: 12px; }
+.field select option { background: var(--bg2); }
+.field-hint { font-size: 11px; color: var(--t3); margin-top: 2px; }
+
+/* ── Terminal log ────────────────────────── */
+.terminal {
+  background: #060910;
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
   overflow: hidden;
-  background: var(--white);
 }
-
-.inv-preview-header {
-  background: var(--ink);
-  color: #fff;
-  padding: 24px 28px;
+.term-bar {
+  padding: 8px 14px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--b1);
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
 }
-
-.inv-preview-body { padding: 24px 28px; }
-
-/* ── TOAST ── */
-.toast-wrap {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 999;
+.tdot { width: 9px; height: 9px; border-radius: 50%; }
+.term-label { font-family: var(--mono); font-size: 10px; color: var(--t3); margin-left: 6px; letter-spacing: 0.05em; }
+.term-body {
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  max-height: 255px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg4) transparent;
+}
+.log-line { display: flex; gap: 10px; align-items: flex-start; animation: logadd 0.15s ease; }
+@keyframes logadd { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+.log-time { color: var(--t4); flex-shrink: 0; font-size: 10px; padding-top: 1px; }
+.log-badge { flex-shrink: 0; font-size: 9.5px; padding: 1px 5px; border-radius: 3px; font-weight: 600; min-width: 34px; text-align: center; }
+.lb-pay  { background: var(--blue-d); color: var(--blue2); }
+.lb-call { background: var(--grn-d);  color: var(--grn); }
+.lb-info { background: var(--bg3);    color: var(--t3); }
+.lb-err  { background: var(--red-d);  color: var(--red); }
+.log-msg { color: var(--t2); word-break: break-all; font-size: 11px; }
+
+/* ── API Cards ───────────────────────────── */
+.api-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+  gap: 12px;
+}
+
+.api-card {
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient glow on hover — like ARC cards */
+.api-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(75,139,255,0.4), transparent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.api-card:hover { border-color: var(--b2); background: var(--bg2); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.api-card:hover::before { opacity: 1; }
+
+.api-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.api-card-name { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 5px; letter-spacing: -0.01em; }
+.api-card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.api-card-desc { font-size: 12px; color: var(--t3); line-height: 1.55; margin-bottom: 14px; }
+.api-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.api-endpoint {
+  font-family: var(--mono); font-size: 10px; color: var(--t3);
+  background: var(--bg2); padding: 2px 7px;
+  border-radius: 4px; border: 1px solid var(--b1);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 158px;
+}
+
+/* ── Playground layout ───────────────────── */
+.play-grid { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
+
+/* ── Pay info box ────────────────────────── */
+.pay-box {
+  background: var(--blue-d);
+  border: 1px solid var(--blue-b);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin: 13px 0;
+}
+.pay-box-label { font-family: var(--mono); font-size: 9px; color: var(--blue2); letter-spacing: 0.1em; margin-bottom: 8px; }
+.pay-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+.pay-line span:first-child { color: var(--t3); }
+.pay-line span:last-child { font-family: var(--mono); font-size: 11px; color: var(--t1); }
+
+/* ── Code block ──────────────────────────── */
+pre.code {
+  background: #060910;
+  border: 1px solid var(--b1);
+  border-radius: var(--r);
+  padding: 13px 15px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--t2);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ── Wallet ──────────────────────────────── */
+.wallet-grid { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
+
+.balance-hero {
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  padding: 28px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+/* ARC-style glow sphere behind number */
+.balance-hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 50%;
+  transform: translateX(-50%);
+  width: 220px; height: 160px;
+  background: radial-gradient(ellipse, rgba(75,139,255,0.15), transparent 65%);
   pointer-events: none;
 }
 
+.balance-hero-label { font-family: var(--mono); font-size: 9px; color: var(--t3); letter-spacing: 0.12em; margin-bottom: 14px; }
+.balance-num { font-family: var(--mono); font-size: 44px; font-weight: 500; color: var(--t1); line-height: 1; letter-spacing: -0.04em; margin-bottom: 5px; }
+.balance-denom { font-size: 13px; color: var(--t3); }
+.balance-calls { font-size: 12px; color: var(--t3); margin-top: 12px; padding: 7px 14px; background: var(--bg2); border-radius: 5px; border: 1px solid var(--b1); }
+
+/* ── Webhooks ────────────────────────────── */
+.wh-grid { display: grid; grid-template-columns: 375px 1fr; gap: 18px; align-items: start; }
+
+.wh-item {
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  transition: border-color 0.12s;
+}
+.wh-item:hover { border-color: var(--b2); }
+
+.ev-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 11px 13px;
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: var(--r);
+}
+.ev-label { display: flex; align-items: center; gap: 9px; cursor: pointer; font-size: 12.5px; color: var(--t2); }
+.ev-label input { accent-color: var(--blue); width: 13px; height: 13px; flex-shrink: 0; }
+.ev-code { font-family: var(--mono); font-size: 11px; color: var(--blue2); }
+
+/* ── My APIs ─────────────────────────────── */
+.my-api-row {
+  background: var(--bg1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r2);
+  padding: 17px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 10px;
+  transition: border-color 0.12s;
+}
+.my-api-row:hover { border-color: var(--b2); }
+.my-earn { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--t1); letter-spacing: -0.03em; line-height: 1; }
+
+/* ── Modal ───────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,6,14,0.82);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadein 0.13s ease;
+}
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg1);
+  border: 1px solid var(--b2);
+  border-radius: 12px;
+  width: 100%; max-width: 456px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 32px 72px rgba(0,0,0,0.9), 0 0 0 1px rgba(75,139,255,0.1);
+  animation: modalin 0.18s ease;
+}
+@keyframes modalin { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--b1); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 14px; font-weight: 600; letter-spacing: -0.02em; }
+.modal-close { background: none; border: none; color: var(--t3); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; border-radius: 4px; transition: all 0.1s; }
+.modal-close:hover { background: var(--bg3); color: var(--t1); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--b1); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── Toasts ──────────────────────────────── */
+#toasts { position: fixed; bottom: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .toast {
-  background: var(--ink);
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 8px;
-  font-size: 13px;
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  animation: slideUp 0.2s ease, fadeOut 0.3s ease 2.7s forwards;
+  background: var(--bg2);
+  border: 1px solid var(--b2);
+  color: var(--t1);
+  padding: 10px 14px;
+  border-radius: var(--r2);
+  font-size: 12.5px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+  display: flex; align-items: center; gap: 8px;
+  max-width: 300px;
+  animation: modalin 0.17s ease, toastout 0.22s ease 2.78s forwards;
   pointer-events: auto;
-  max-width: 320px;
 }
+@keyframes toastout { to { opacity: 0; transform: translateY(5px); } }
 
-@keyframes fadeOut { to { opacity: 0; transform: translateY(8px); } }
+/* ── Empty states ────────────────────────── */
+.empty { padding: 50px 24px; text-align: center; color: var(--t3); }
+.empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.35; }
+.empty-title { font-size: 14px; font-weight: 600; color: var(--t2); margin-bottom: 5px; }
+.empty-desc { font-size: 12.5px; }
 
-/* ── SECTION HEADER ── */
-.section-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+/* ── Utils ───────────────────────────────── */
+.divider { height: 1px; background: var(--b1); margin: 13px 0; }
+.row { display: flex; align-items: center; }
+.row-between { display: flex; align-items: center; justify-content: space-between; }
+.g6 { gap: 6px; } .g8 { gap: 8px; } .g12 { gap: 12px; }
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.f12{font-size:12px}.f13{font-size:13px}.fw6{font-weight:600}
+.c2{color:var(--t2)}.c3{color:var(--t3)}.mono{font-family:var(--mono)}
+.c-blue{color:var(--blue2)}.c-grn{color:var(--grn)}
+
+.steps { display: flex; flex-direction: column; gap: 11px; }
+.step { display: flex; gap: 11px; align-items: flex-start; }
+.step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--b2);
+  color: var(--blue2);
+  display: grid; place-items: center;
+  font-size: 9.5px; font-weight: 600; flex-shrink: 0;
+  margin-top: 2px; font-family: var(--mono);
 }
+.step-text { font-size: 12.5px; color: var(--t2); line-height: 1.55; }
 
-.section-heading {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.02em;
+/* ── Responsive ──────────────────────────── */
+@media(max-width:980px){
+  .sidebar{width:54px}
+  .brand-name,.brand-tag,.nav-btn span:not(.nav-icon),.nav-section,.sb-foot{display:none}
+  .main{margin-left:54px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .play-grid,.wallet-grid,.wh-grid{grid-template-columns:1fr}
 }
-
-/* ── EMPTY STATE ── */
-.empty-state {
-  text-align: center;
-  padding: 60px 24px;
-  color: var(--muted);
-}
-
-.empty-icon { font-size: 40px; margin-bottom: 14px; }
-.empty-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-.empty-desc { font-size: 13px; color: var(--muted); }
-
-/* ── MISC ── */
-.divider { height: 1px; background: var(--line); margin: 16px 0; }
-.text-mid { color: var(--mid); }
-.text-muted { color: var(--muted); }
-.text-green { color: var(--green); }
-.text-mono { font-family: 'DM Mono', monospace; font-size: 12px; }
-.flex { display: flex; }
-.flex-center { display: flex; align-items: center; }
-.gap-8 { gap: 8px; }
-.gap-12 { gap: 12px; }
-.mt-4 { margin-top: 4px; }
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-.fw-600 { font-weight: 600; }
-.fs-13 { font-size: 13px; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .sidebar { width: 64px; }
-  .sidebar-logo { padding: 18px 16px; }
-  .logo-text, .logo-sub, .nav-item span:not(.nav-icon) { display: none; }
-  .main { margin-left: 64px; }
-  .stats-row { grid-template-columns: repeat(2,1fr); }
-  .sidebar-footer { display: none; }
-}
-
-@media (max-width: 640px) {
-  .sidebar { display: none; }
-  .main { margin-left: 0; }
-  .content { padding: 20px; }
-  .form-row, .form-row-3 { grid-template-columns: 1fr; }
-  .stats-row { grid-template-columns: 1fr 1fr; }
+@media(max-width:600px){
+  .sidebar{display:none}.main{margin-left:0}
+  .page{padding:18px 14px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .api-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-<div id="root"></div>
 
-<script type="text/babel">
-const { useState, useCallback, useEffect, useRef } = React;
+<!-- Modal -->
+<div id="modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title"></span>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
 
-// ─── UTILS ───────────────────────────────────────────
-const genId = () => Math.random().toString(36).slice(2,9).toUpperCase();
-const fmt = (n) => Number(n||0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtDate = (d) => new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-const today = () => new Date().toISOString().split('T')[0];
-const daysFrom = (n) => { const d = new Date(); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; };
-const shortAddr = (a) => a ? `${a.slice(0,6)}…${a.slice(-4)}` : '—';
+<!-- Toasts -->
+<div id="toasts"></div>
 
-// ─── SEED DATA ───────────────────────────────────────
-const SEED_INVOICES = [
-  {
-    id: 'INV-001', num: 'INV-001', status: 'paid',
-    client: 'Acme Corp', clientEmail: 'billing@acme.com', clientWallet: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-    issueDate: '2025-11-01', dueDate: '2025-11-15',
-    currency: 'USDC', note: 'Website redesign project',
-    items: [
-      { desc: 'UI/UX Design', qty: 40, price: 85, total: 3400 },
-      { desc: 'Frontend Dev', qty: 60, price: 95, total: 5700 },
-    ],
-    subtotal: 9100, tax: 0, total: 9100,
-    payLink: 'pay/INV-001', paidAt: '2025-11-12', txHash: '0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890'
-  },
-  {
-    id: 'INV-002', num: 'INV-002', status: 'pending',
-    client: 'TechVentures GmbH', clientEmail: 'ap@techventures.de', clientWallet: '',
-    issueDate: '2025-12-10', dueDate: '2025-12-25',
-    currency: 'EURC', note: 'Monthly retainer — December',
-    items: [
-      { desc: 'Strategy Consulting', qty: 20, price: 150, total: 3000 },
-      { desc: 'Research Report', qty: 1, price: 800, total: 800 },
-    ],
-    subtotal: 3800, tax: 0, total: 3800,
-    payLink: 'pay/INV-002', paidAt: null, txHash: null
-  },
-  {
-    id: 'INV-003', num: 'INV-003', status: 'overdue',
-    client: 'Global Trade LLC', clientEmail: 'finance@globaltrade.io', clientWallet: '',
-    issueDate: '2025-10-01', dueDate: '2025-10-20',
-    currency: 'USDC', note: 'API integration & deployment',
-    items: [
-      { desc: 'Backend API', qty: 30, price: 110, total: 3300 },
-      { desc: 'DevOps Setup', qty: 10, price: 120, total: 1200 },
-    ],
-    subtotal: 4500, tax: 0, total: 4500,
-    payLink: 'pay/INV-003', paidAt: null, txHash: null
-  },
-  {
-    id: 'INV-004', num: 'INV-004', status: 'draft',
-    client: 'Startup XYZ', clientEmail: 'hello@startupxyz.com', clientWallet: '',
-    issueDate: today(), dueDate: daysFrom(30),
-    currency: 'USDC', note: '',
-    items: [
-      { desc: 'Brand Identity', qty: 1, price: 2200, total: 2200 },
-    ],
-    subtotal: 2200, tax: 0, total: 2200,
-    payLink: 'pay/INV-004', paidAt: null, txHash: null
-  },
-];
+<div class="shell">
 
-// ─── COMPONENTS ──────────────────────────────────────
-function StatusBadge({ status }) {
-  const map = {
-    paid:    { label: 'Paid',    cls: 'badge-green' },
-    pending: { label: 'Pending', cls: 'badge-amber' },
-    overdue: { label: 'Overdue', cls: 'badge-red' },
-    draft:   { label: 'Draft',   cls: 'badge-gray' },
-  };
-  const s = map[status] || map.draft;
-  return <span className={`badge ${s.cls}`}><span className="badge-dot"></span>{s.label}</span>;
-}
-
-function Toast({ msg, icon }) {
-  return <div className="toast">{icon || '✓'} {msg}</div>;
-}
-
-// ─── DASHBOARD ───────────────────────────────────────
-function Dashboard({ invoices, onNew, onView, onPay }) {
-  const paid = invoices.filter(i => i.status === 'paid');
-  const pending = invoices.filter(i => i.status === 'pending');
-  const overdue = invoices.filter(i => i.status === 'overdue');
-  const totalPaid = paid.reduce((a,i) => a + i.total, 0);
-  const totalPending = pending.reduce((a,i) => a + i.total, 0);
-  const totalOverdue = overdue.reduce((a,i) => a + i.total, 0);
-
-  return (
-    <div className="content">
-      <div className="section-top">
-        <div>
-          <h1 className="section-heading">Invoices</h1>
-          <p className="text-muted fs-13 mt-4">Stablecoin invoicing on ARC — instant settlement, zero volatility.</p>
-        </div>
-        <button className="btn btn-primary" onClick={onNew}>
-          + New Invoice
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="stats-row">
-        <div className="stat-card">
-          <div className="stat-label">Total Paid</div>
-          <div className="stat-value">{fmt(totalPaid)}</div>
-          <div className="stat-sub"><span className="stat-up">↑</span> {paid.length} invoice{paid.length !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Awaiting Payment</div>
-          <div className="stat-value">{fmt(totalPending)}</div>
-          <div className="stat-sub text-mid">{pending.length} invoice{pending.length !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Overdue</div>
-          <div className="stat-value" style={{color: totalOverdue > 0 ? 'var(--red)' : 'inherit'}}>{fmt(totalOverdue)}</div>
-          <div className="stat-sub" style={{color:'var(--red)'}}>{overdue.length} invoice{overdue.length !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Settlement</div>
-          <div className="stat-value" style={{fontSize:20, paddingTop:4}}>≤ 350ms</div>
-          <div className="stat-sub flex-center gap-8"><span className="arc-badge-sm">ARC</span> Finality</div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="card">
-        <div className="card-header">
-          <span className="card-title">All Invoices</span>
-          <span className="text-muted fs-13">{invoices.length} total</span>
-        </div>
-        {invoices.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📄</div>
-            <div className="empty-title">No invoices yet</div>
-            <div className="empty-desc">Create your first invoice to get started.</div>
-          </div>
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Client</th>
-                  <th>Issue Date</th>
-                  <th>Due Date</th>
-                  <th>Amount</th>
-                  <th>Currency</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.map(inv => (
-                  <tr key={inv.id}>
-                    <td><span className="td-mono">{inv.num}</span></td>
-                    <td>
-                      <div className="fw-600">{inv.client}</div>
-                      <div className="text-muted fs-13">{inv.clientEmail}</div>
-                    </td>
-                    <td className="td-mono">{fmtDate(inv.issueDate)}</td>
-                    <td className="td-mono">{fmtDate(inv.dueDate)}</td>
-                    <td><span className="text-mono fw-600">{fmt(inv.total)}</span></td>
-                    <td>
-                      <span className={`badge ${inv.currency === 'USDC' ? 'badge-blue' : 'badge-green'}`}>{inv.currency}</span>
-                    </td>
-                    <td><StatusBadge status={inv.status} /></td>
-                    <td>
-                      <div style={{display:'flex',gap:4}}>
-                        <button className="btn btn-ghost btn-sm" onClick={() => onView(inv)}>View</button>
-                        {(inv.status === 'pending' || inv.status === 'overdue') &&
-                          <button className="btn btn-secondary btn-sm" onClick={() => onPay(inv)}>Pay Link</button>
-                        }
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="brand" onclick="nav('marketplace')">
+      <div class="brand-icon" style="background:none;padding:0;overflow:visible;box-shadow:none">
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a2d5a"/>
+      <stop offset="100%" stop-color="#0d1a3a"/>
+    </linearGradient>
+    <linearGradient id="arc-g" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6ba3ff"/>
+      <stop offset="100%" stop-color="#4b8bff"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="url(#bg-g)"/>
+  <!-- Arc / gate shape: two pillars + arch -->
+  <path d="M8 24 L8 14 Q8 8 16 8 Q24 8 24 14 L24 24" 
+        stroke="url(#arc-g)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Arrow passing through the gate -->
+  <line x1="16" y1="20" x2="16" y2="27" stroke="#4b8bff" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
+  <line x1="16" y1="13" x2="16" y2="20" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="13,16 16,13 19,16" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+      <div>
+        <div class="brand-name">ArcGate</div>
+        <div class="brand-tag">BUILT ON ARC</div>
       </div>
     </div>
-  );
+
+    <div class="nav">
+      <div class="nav-section">Explore</div>
+      <button class="nav-btn on" data-page="marketplace">
+        <span class="nav-icon">&#9732;</span><span>Marketplace</span>
+      </button>
+
+      <div class="nav-section">Build</div>
+      <button class="nav-btn" data-page="playground">
+        <span class="nav-icon">&#9881;</span><span>Playground</span>
+      </button>
+      <button class="nav-btn" data-page="webhooks">
+        <span class="nav-icon">&#10548;</span><span>Webhooks</span>
+      </button>
+      <button class="nav-btn" data-page="myapis">
+        <span class="nav-icon">&#43;</span><span>My APIs</span>
+      </button>
+
+      <div class="nav-section">Account</div>
+      <button class="nav-btn" data-page="wallet">
+        <span class="nav-icon">&#9673;</span><span>Wallet</span>
+      </button>
+    </div>
+
+    <div class="sb-foot">
+      <div class="net-card">
+        <div class="net-top">
+          <span class="net-label">ARC TESTNET</span>
+          <span class="net-live"><span class="live-dot"></span>LIVE</span>
+        </div>
+        <div class="net-stat"><span>Finality</span><span>&lt;1s finality</span></div>
+        <div class="net-stat"><span>Gas token</span><span>USDC</span></div>
+      </div>
+      <div class="sb-bal-label">Balance</div>
+      <div class="sb-bal-value" id="sb-balance">0.000<small>USDC</small></div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <div class="header">
+      <div class="hdr-path">arcgate / <em id="hdr-page">marketplace</em></div>
+      <div class="hdr-right">
+        <span class="chip ch-blue">$0.001 / call</span>
+        <span class="chip ch-grn" id="hdr-txs">0 txs</span>
+        <span class="chip ch-dim">ARC TESTNET</span>
+      </div>
+    </div>
+
+    <!-- Marketplace -->
+    <div class="page on" id="page-marketplace">
+      <div class="pg-head">
+        <div class="pg-title">Marketplace</div>
+        <div class="pg-sub">API gateway for agents. Pay $0.001 USDC per call, settled onchain in under 1 second.</div>
+      </div>
+      <div class="stats-row" id="mkt-stats"></div>
+      <div class="row g8 mb16" id="mkt-filters"></div>
+      <div class="api-grid" id="api-grid"></div>
+    </div>
+
+    <!-- Playground -->
+    <div class="page" id="page-playground">
+      <div class="pg-head">
+        <div class="pg-title">Playground</div>
+        <div class="pg-sub">Make a real API call. $0.001 USDC deducted. Settled onchain via Arc in under 1 second.</div>
+      </div>
+      <div class="play-grid">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Request</span></div>
+            <div class="card-body">
+              <div class="form-stack">
+                <div class="field">
+                  <div class="field-label">API</div>
+                  <select id="play-api" onchange="onApiChange()"></select>
+                </div>
+                <div class="field">
+                  <div class="field-label">Endpoint</div>
+                  <input id="play-ep" readonly style="color:var(--t3)">
+                </div>
+                <div class="field mono-field">
+                  <div class="field-label">Agent key</div>
+                  <input id="play-key" placeholder="apk_...  (create one in Wallet)">
+                </div>
+                <div class="field mono-field">
+                  <div class="field-label">Parameters (JSON)</div>
+                  <textarea id="play-params">{"city": "Berlin"}</textarea>
+                  <div class="field-hint" id="play-hint">Try: Berlin, Tokyo, New York</div>
+                </div>
+              </div>
+              <div class="pay-box">
+                <div class="pay-box-label">PAYMENT &middot; ARC TESTNET</div>
+                <div class="pay-line"><span>Cost per call</span><span>$0.001 USDC</span></div>
+                <div class="pay-line"><span>Settlement</span><span class="c-grn">&lt;1 second</span></div>
+                <div class="pay-line"><span>Your balance</span><span id="play-balance" class="c-blue">0.000 USDC</span></div>
+              </div>
+              <button id="play-btn" class="btn btn-primary btn-block btn-lg" onclick="runCall()">
+                Pay $0.001 &amp; Call API
+              </button>
+            </div>
+          </div>
+
+          <div id="play-resp-card" class="card" style="display:none">
+            <div class="card-head">
+              <span class="card-title">Response</span>
+              <span class="chip ch-grn" style="font-size:9px">200 OK</span>
+            </div>
+            <div style="padding:12px">
+              <pre class="code" id="play-resp-body" style="font-size:10.5px;max-height:230px;overflow-y:auto"></pre>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Live log</span>
+              <span class="chip ch-grn"><span class="live-dot" style="display:inline-block;margin-right:4px"></span>LIVE</span>
+            </div>
+            <div class="terminal" style="border:none;border-radius:0">
+              <div class="term-bar">
+                <div class="tdot" style="background:#ff5f57"></div>
+                <div class="tdot" style="background:#febc2e;margin-left:4px"></div>
+                <div class="tdot" style="background:#28c840;margin-left:4px"></div>
+                <span class="term-label">pay-and-call</span>
+              </div>
+              <div class="term-body" id="play-log">
+                <div style="color:var(--t4);padding:16px 0;text-align:center;font-size:10.5px">Waiting for calls&hellip;</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title">Integration</span></div>
+            <div style="padding:12px">
+              <pre class="code" id="play-code" style="font-size:11px"></pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Recent payments</span>
+              <span class="c3 f12 mono" id="play-txcount">0 txs</span>
+            </div>
+            <div class="tbl-wrap" id="play-txs">
+              <div style="padding:16px;text-align:center;color:var(--t3);font-size:12px">No transactions yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wallet -->
+    <div class="page" id="page-wallet">
+      <div class="pg-head">
+        <div class="pg-title">Wallet</div>
+        <div class="pg-sub">Your USDC on Arc Testnet &mdash; balance is read directly from the blockchain</div>
+      </div>
+      <div class="wallet-grid">
+        <div style="display:flex;flex-direction:column;gap:14px" id="wallet-left"></div>
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Transaction history</span>
+            <span class="c3 f12 mono" id="wallet-txcount">0 records</span>
+          </div>
+          <div class="tbl-wrap" id="wallet-txs">
+            <div class="empty"><div class="empty-icon">&#9673;</div><div class="empty-title">No transactions yet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webhooks -->
+    <div class="page" id="page-webhooks">
+      <div class="pg-head">
+        <div class="pg-title">Webhooks</div>
+        <div class="pg-sub">Get notified when USDC moves onchain. HTTP POST to your endpoint within 60 seconds.</div>
+      </div>
+      <div class="wh-grid">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <div class="card-head"><span class="card-title">New subscription</span></div>
+            <div class="card-body">
+              <div class="form-stack">
+                <div class="field mono-field">
+                  <div class="field-label">Arc address to watch</div>
+                  <input id="wh-addr" placeholder="0x...">
+                </div>
+                <div class="field mono-field">
+                  <div class="field-label">Your webhook URL</div>
+                  <input id="wh-url" placeholder="https://your-server.com/webhook">
+                </div>
+                <div class="field">
+                  <div class="field-label">Events</div>
+                  <div class="ev-group">
+                    <label class="ev-label">
+                      <input type="checkbox" class="ev-cb" value="transfer.in" checked>
+                      <span class="ev-code">transfer.in</span> &mdash; incoming USDC
+                    </label>
+                    <label class="ev-label">
+                      <input type="checkbox" class="ev-cb" value="transfer.out" checked>
+                      <span class="ev-code">transfer.out</span> &mdash; outgoing USDC
+                    </label>
+                    <label class="ev-label">
+                      <input type="checkbox" class="ev-cb" value="transfer.any">
+                      <span class="ev-code">transfer.any</span> &mdash; all transfers
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button id="wh-btn" class="btn btn-primary btn-block mt12" onclick="createWebhook()">
+                Create webhook
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title">How it works</span></div>
+            <div class="card-body">
+              <div class="steps">
+                <div class="step"><div class="step-num">1</div><div class="step-text">Subscribe to any Arc address</div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-text">Worker polls Arc every minute via ethers.js</div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-text">On new USDC transfer &mdash; POST to your URL with JSON payload</div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-text">Verify authenticity with HMAC-SHA256 signature</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title">Verify signature (Node.js)</span></div>
+            <div style="padding:12px">
+              <pre class="code" style="font-size:11px">import { createHmac } from 'crypto'
+
+function verify(req, secret) {
+  const sig = req.headers['x-arcgate-signature']
+  const expected = 'sha256=' +
+    createHmac('sha256', secret)
+      .update(JSON.stringify(req.body))
+      .digest('hex')
+  return sig === expected
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="row-between mb12">
+            <span class="fw6" style="font-size:14px">Subscriptions</span>
+            <div class="row g8">
+              <span class="c3 f12 mono" id="wh-count">0 / 10</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadWebhooks()">Refresh</button>
+            </div>
+          </div>
+          <div id="wh-list">
+            <div class="empty">
+              <div class="empty-icon">&#10548;</div>
+              <div class="empty-title">No subscriptions yet</div>
+              <div class="empty-desc">Create one to start receiving notifications.</div>
+            </div>
+          </div>
+
+          <div class="card mt12">
+            <div class="card-head"><span class="card-title">Payload example</span></div>
+            <div style="padding:12px">
+              <pre class="code" style="font-size:10.5px">{
+  "event": "transfer.in",
+  "network": "Arc Testnet",
+  "arc_address": "0xYourAddress",
+  "tx_hash": "0xabc...def",
+  "from": "0x123...456",
+  "amount_usdc": "0.001",
+  "block_number": 12345678,
+  "explorer": "https://testnet.arcscan.app/tx/0x...",
+  "timestamp": "2026-03-30T12:00:00Z"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My APIs -->
+    <div class="page" id="page-myapis">
+      <div class="row-between mb20">
+        <div class="pg-head" style="margin-bottom:0">
+          <div class="pg-title">My APIs</div>
+          <div class="pg-sub">Register your endpoint. Earn $0.001 USDC per call, settled onchain.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openRegisterModal()">+ Register API</button>
+      </div>
+      <div id="myapis-list">
+        <div class="empty">
+          <div class="empty-icon">&#43;</div>
+          <div class="empty-title">No APIs registered yet</div>
+          <div class="empty-desc">Deploy your API. Agents pay $0.001 USDC per call, settled onchain on Arc.</div>
+          <button class="btn btn-primary mt12" onclick="openRegisterModal()">Register API</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const S = {
+  page: 'marketplace', catFilter: 'All', calling: false, selectedId: null,
+  key: localStorage.getItem('ag_k') || '',
+  addr: localStorage.getItem('ag_a') || '',
+  balance: 0, txs: [], webhooks: [], myApis: [],
+  apis: [
+    { id:'weather-1',   name:'Weather Pro',   cat:'Data',    calls:0, rev:0, ep:'open-meteo.com',                desc:'Weather data for any city. Returns temperature, humidity, and wind speed in under 200ms.',    ex:'{"city":"Berlin"}',                               hint:'Try: Berlin, Tokyo, New York' },
+    { id:'fx-1',        name:'FX Rates',       cat:'Finance', calls:0, rev:0, ep:'frankfurter.app',               desc:'Live FX rates from ECB. 30+ stablecoin-compatible currency pairs, updated daily.',      ex:'{"base":"USD","currencies":"EUR,GBP,JPY"}',        hint:'Bases: USD EUR GBP JPY' },
+    { id:'geo-1',       name:'GeoIP Lookup',   cat:'Infra',   calls:0, rev:0, ep:'ipapi.co',                      desc:'Resolve any IP to city, country, timezone, and ISP. Useful for agent geolocation.',                        ex:'{"ip":"8.8.8.8"}',                                 hint:'Leave blank for your own IP' },
+    { id:'countries-1', name:'Country Data',   cat:'Data',    calls:0, rev:0, ep:'restcountries.com',             desc:'Country-level data: capital, population, languages, and local currency.',          ex:'{"country":"Germany"}',                            hint:'Try: France, Japan, Brazil' },
+    { id:'crypto-1',    name:'Crypto Prices',  cat:'Finance', calls:0, rev:0, ep:'coingecko.com',                 desc:'Live BTC, ETH, and USDC prices with 24h change. Useful for treasury-aware agents.',  ex:'{"coins":"bitcoin,ethereum","vs_currency":"usd"}', hint:'Coins: bitcoin ethereum solana' },
+    { id:'joke-1',      name:'Random Joke',    cat:'Other',   calls:0, rev:0, ep:'official-joke-api.appspot.com', desc:'Returns a random joke. Handy for validating your end-to-end pay-and-call pipeline.',              ex:'{"type":"programming"}',                           hint:'Types: general programming' },
+  ],
+};
+
+const $ = id => document.getElementById(id);
+const fmtU = n => Number(n||0).toFixed(3);
+const fmtN = n => Number(n||0).toLocaleString();
+const now  = () => new Date().toLocaleTimeString('en', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+const shortH = h => h ? h.slice(0,8)+'...'+h.slice(-6) : '-';
+
+// Toast
+function toast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = (type === 'err' ? '✕' : type === 'warn' ? '!' : '✓') + '  ' + msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3100);
 }
 
-// ─── NEW INVOICE FORM ─────────────────────────────────
-function NewInvoiceForm({ onSave, onCancel, counter }) {
-  const [form, setForm] = useState({
-    client: '', clientEmail: '', clientWallet: '',
-    issueDate: today(), dueDate: daysFrom(14),
-    currency: 'USDC', note: '',
-  });
-  const [items, setItems] = useState([
-    { id: 1, desc: '', qty: 1, price: '', total: 0 }
-  ]);
-  const [tax, setTax] = useState(0);
+// Navigation
+function nav(page) {
+  document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.toggle('on', b.dataset.page === page));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'page-' + page));
+  S.page = page;
+  $('hdr-page').textContent = page === 'myapis' ? 'my-apis' : page;
+  if (page === 'marketplace') renderMarket();
+  if (page === 'playground')  renderPlayground();
+  if (page === 'wallet')      renderWallet();
+  if (page === 'webhooks')    loadWebhooks();
+  if (page === 'myapis')      renderMyApis();
+}
+document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.addEventListener('click', () => nav(b.dataset.page)));
 
-  const setF = (k, v) => setForm(p => ({...p, [k]: v}));
+// Balance sync
+function syncBalance() {
+  $('sb-balance').innerHTML = fmtU(S.balance) + '<small>USDC</small>';
+  const pb = $('play-balance');
+  if (pb) { pb.textContent = fmtU(S.balance) + ' USDC'; pb.style.color = S.balance < 0.002 ? 'var(--red)' : 'var(--blue2)'; }
+  const wb = $('wallet-balance-num'); if (wb) wb.textContent = fmtU(S.balance);
+  const wc = $('wallet-balance-calls'); if (wc) wc.textContent = '~ ' + Math.floor(S.balance / 0.001).toLocaleString() + ' API calls remaining';
+}
 
-  const updateItem = (id, k, v) => {
-    setItems(prev => prev.map(it => {
-      if (it.id !== id) return it;
-      const upd = {...it, [k]: v};
-      upd.total = Number(upd.qty||0) * Number(upd.price||0);
-      return upd;
-    }));
-  };
+// Log
+function addLog(type, msg) {
+  const box = $('play-log'); if (!box) return;
+  const ph = box.querySelector('[style*="text-align:center"]'); if (ph) ph.remove();
+  const row = document.createElement('div'); row.className = 'log-line';
+  row.innerHTML = `<span class="log-time">${now()}</span><span class="log-badge lb-${type}">${type.toUpperCase()}</span><span class="log-msg">${msg}</span>`;
+  box.appendChild(row); box.scrollTop = box.scrollHeight;
+}
 
-  const addItem = () => setItems(p => [...p, { id: Date.now(), desc: '', qty: 1, price: '', total: 0 }]);
-  const delItem = (id) => setItems(p => p.filter(it => it.id !== id));
+// TX table
+function renderTxTable(id) {
+  const c = $(id); if (!c) return;
+  if (!S.txs.length) { c.innerHTML = '<div style="padding:16px;text-align:center;color:var(--t3);font-size:12px">No transactions yet</div>'; return; }
+  c.innerHTML = `<table><thead><tr><th>Time</th><th>API</th><th>Amount</th><th>Tx Hash</th></tr></thead><tbody>` +
+    S.txs.slice(0,8).map(tx => `<tr>
+      <td class="cell-mono">${tx.ts}</td>
+      <td class="f13">${tx.api}</td>
+      <td><span class="chip ch-blue" style="font-size:9px">${fmtU(tx.amount)}</span></td>
+      <td>${tx.explorer
+        ? `<a href="${tx.explorer}" target="_blank" class="mono" style="font-size:10px;color:var(--blue2);opacity:0.9;text-decoration:none">${shortH(tx.tx)}</a>`
+        : `<span class="cell-mono">${shortH(tx.tx)}</span>`}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
 
-  const subtotal = items.reduce((a,i) => a + i.total, 0);
-  const taxAmt = subtotal * (Number(tax)||0) / 100;
-  const total = subtotal + taxAmt;
+// ── MARKETPLACE ────────────────────────────
+function renderMarket() {
+  const all = [...S.apis, ...S.myApis];
+  const shown = S.catFilter === 'All' ? all : all.filter(a => a.cat === S.catFilter);
+  const cats = ['All','Data','Finance','Infra','Other'];
+  const tc = all.reduce((a,x) => a+x.calls, 0);
+  const tr = all.reduce((a,x) => a+x.rev, 0);
 
-  const handleSave = (status) => {
-    if (!form.client) return alert('Client name is required');
-    if (items.every(i => !i.desc)) return alert('Add at least one line item');
-    const num = `INV-${String(counter).padStart(3,'0')}`;
-    onSave({
-      id: num, num, status,
-      ...form,
-      items: items.map(({id,...rest}) => rest),
-      subtotal, tax: taxAmt, total,
-      payLink: `pay/${num}`,
-      paidAt: null, txHash: null,
+  $('mkt-stats').innerHTML = [
+    { l:'APIs',         v: all.length,          s:'available' },
+    { l:'Total calls',  v: fmtN(tc),            s:'all time' },
+    { l:'USDC settled', v: '$'+fmtU(tr),         s:'settled onchain on Arc' },
+    { l:'Your balance', v: fmtU(S.balance),      s:'USDC remaining' },
+  ].map(s => `<div class="stat-card"><div class="stat-lbl">${s.l}</div><div class="stat-val">${s.v}</div><div class="stat-sub">${s.s}</div></div>`).join('');
+
+  $('mkt-filters').innerHTML = cats.map(c =>
+    `<button class="btn btn-sm ${S.catFilter===c ? 'btn-primary' : 'btn-secondary'}" onclick="setCat('${c}')">${c}</button>`
+  ).join('') + `<span class="c3 f12 mono" style="margin-left:auto">${shown.length} APIs</span>`;
+
+  $('api-grid').innerHTML = shown.map(api => `
+    <div class="api-card" onclick="goPlayground('${api.id}')">
+      <div class="api-card-header">
+        <div>
+          <div class="api-card-name">${api.name}</div>
+          <div class="api-card-tags">
+            <span class="chip ch-dim">${api.cat}</span>
+            <span class="chip ch-blue" style="font-size:9px">$0.001 / call</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();goPlayground('${api.id}')">Try &rarr;</button>
+      </div>
+      <div class="api-card-desc">${api.desc}</div>
+      <div class="api-card-footer">
+        <span class="api-endpoint">${api.ep}</span>
+        <span class="c3 f12 mono">${fmtN(api.calls)} calls</span>
+      </div>
+    </div>`).join('');
+}
+
+function setCat(cat) { S.catFilter = cat; renderMarket(); }
+function goPlayground(id) { S.selectedId = id; nav('playground'); }
+
+// ── PLAYGROUND ─────────────────────────────
+function renderPlayground() {
+  const all = [...S.apis, ...S.myApis];
+  const sel = $('play-api');
+  sel.innerHTML = all.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  if (S.selectedId) sel.value = S.selectedId;
+  onApiChange(); syncBalance(); renderTxTable('play-txs');
+  $('play-txcount').textContent = S.txs.length + ' txs';
+  if (S.key) $('play-key').value = S.key;
+  updateCodeSnippet();
+}
+
+function onApiChange() {
+  const all = [...S.apis, ...S.myApis];
+  const api = all.find(a => a.id === $('play-api').value); if (!api) return;
+  $('play-ep').value = api.ep;
+  if (api.ex) try { $('play-params').value = JSON.stringify(JSON.parse(api.ex), null, 2); } catch(e) {}
+  if (api.hint) $('play-hint').textContent = api.hint;
+  updateCodeSnippet();
+}
+
+function updateCodeSnippet() {
+  const c = $('play-code'); if (!c) return;
+  const id = $('play-api') ? $('play-api').value : 'weather-1';
+  c.textContent = `const res = await fetch('/api/pay-and-call', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer ' + agentKey,\n    'Content-Type': 'application/json',\n  },\n  body: JSON.stringify({\n    api_id: '${id}',\n    params: { city: 'Berlin' },\n  }),\n})\nconst { data, payment } = await res.json()\n// payment.tx_hash — verifiable onchain at testnet.arcscan.app`;
+}
+
+async function runCall() {
+  if (S.calling) return;
+  const key = $('play-key').value.trim();
+  if (!key || !key.startsWith('apk_')) { toast('Enter your agent key — create one in Wallet', 'warn'); return; }
+  const all = [...S.apis, ...S.myApis];
+  const api = all.find(a => a.id === $('play-api').value);
+  let params = {}; try { params = JSON.parse($('play-params').value || '{}'); } catch(e) { toast('Invalid JSON', 'err'); return; }
+
+  S.calling = true;
+  const btn = $('play-btn'); btn.disabled = true; btn.textContent = 'Settling on Arc...';
+  addLog('info', 'Sending request...');
+
+  try {
+    const r = await fetch('/api/pay-and-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ api_id: api.id, params }),
     });
-  };
+    const j = await r.json();
 
-  return (
-    <div className="content">
-      <div className="section-top" style={{marginBottom:24}}>
-        <div>
-          <button className="btn btn-ghost btn-sm" style={{marginBottom:8,marginLeft:-8}} onClick={onCancel}>← Back</button>
-          <h1 className="section-heading">New Invoice</h1>
-        </div>
-        <div style={{display:'flex',gap:8}}>
-          <button className="btn btn-secondary" onClick={() => handleSave('draft')}>Save Draft</button>
-          <button className="btn btn-primary" onClick={() => handleSave('pending')}>Send Invoice</button>
-        </div>
-      </div>
-
-      <div style={{display:'grid', gridTemplateColumns:'1fr 340px', gap:24, alignItems:'start'}}>
-        {/* LEFT */}
-        <div style={{display:'flex',flexDirection:'column',gap:20}}>
-
-          {/* Client */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">Client Details</span></div>
-            <div className="card-body">
-              <div className="form-grid">
-                <div className="form-row">
-                  <div className="field">
-                    <label>Client / Company Name *</label>
-                    <input value={form.client} onChange={e=>setF('client',e.target.value)} placeholder="Acme Corp" />
-                  </div>
-                  <div className="field">
-                    <label>Email</label>
-                    <input type="email" value={form.clientEmail} onChange={e=>setF('clientEmail',e.target.value)} placeholder="billing@client.com" />
-                  </div>
-                </div>
-                <div className="field field-mono">
-                  <label>Wallet Address (optional)</label>
-                  <input value={form.clientWallet} onChange={e=>setF('clientWallet',e.target.value)} placeholder="0x..." />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Line Items */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-title">Line Items</span>
-              <button className="btn btn-secondary btn-sm" onClick={addItem}>+ Add Item</button>
-            </div>
-            <div className="card-body">
-              <div className="li-header">
-                <span>Description</span>
-                <span>Qty</span>
-                <span>Price ({form.currency})</span>
-                <span>Total</span>
-                <span></span>
-              </div>
-              <div className="line-items">
-                {items.map(it => (
-                  <div className="li-row" key={it.id}>
-                    <input value={it.desc} onChange={e=>updateItem(it.id,'desc',e.target.value)} placeholder="Service description" />
-                    <input type="number" value={it.qty} onChange={e=>updateItem(it.id,'qty',e.target.value)} min="0" style={{textAlign:'center'}} />
-                    <input type="number" value={it.price} onChange={e=>updateItem(it.id,'price',e.target.value)} min="0" step="0.01" placeholder="0.00" />
-                    <span className="li-total">{fmt(it.total)}</span>
-                    <button className="li-del" onClick={()=>delItem(it.id)}>×</button>
-                  </div>
-                ))}
-              </div>
-              <div className="totals-box">
-                <div className="total-row">
-                  <span className="total-label">Subtotal</span>
-                  <span className="total-val">{fmt(subtotal)}</span>
-                </div>
-                <div className="total-row" style={{alignItems:'center'}}>
-                  <span className="total-label">Tax (%)</span>
-                  <span className="total-val">
-                    <input type="number" value={tax} onChange={e=>setTax(e.target.value)} min="0" max="100" step="0.5"
-                      style={{width:60,textAlign:'right',padding:'3px 6px',border:'1px solid var(--line)',borderRadius:4,fontFamily:'DM Mono',fontSize:13}} />
-                  </span>
-                </div>
-                {taxAmt > 0 && <div className="total-row">
-                  <span className="total-label">Tax Amount</span>
-                  <span className="total-val">{fmt(taxAmt)}</span>
-                </div>}
-                <div className="total-row grand">
-                  <span className="total-label">Total</span>
-                  <span className="total-val">{fmt(total)} {form.currency}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">Notes</span></div>
-            <div className="card-body">
-              <div className="field">
-                <textarea value={form.note} onChange={e=>setF('note',e.target.value)} placeholder="Payment terms, project details, thank you message…" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT */}
-        <div style={{display:'flex',flexDirection:'column',gap:16,position:'sticky',top:72}}>
-          <div className="card">
-            <div className="card-header"><span className="card-title">Invoice Settings</span></div>
-            <div className="card-body">
-              <div className="form-grid">
-                <div className="field">
-                  <label>Issue Date</label>
-                  <input type="date" value={form.issueDate} onChange={e=>setF('issueDate',e.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Due Date</label>
-                  <input type="date" value={form.dueDate} onChange={e=>setF('dueDate',e.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Currency</label>
-                  <select value={form.currency} onChange={e=>setF('currency',e.target.value)}>
-                    <option value="USDC">USDC — US Dollar Coin</option>
-                    <option value="EURC">EURC — Euro Coin</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card" style={{background:'var(--ink)',borderColor:'var(--ink)'}}>
-            <div className="card-body" style={{color:'#fff'}}>
-              <div style={{fontSize:12,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:10}}>Why ARC Network</div>
-              <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                {[
-                  ['⚡','Sub-second finality','≤350ms settlement'],
-                  ['💲','USDC gas fees','No crypto volatility'],
-                  ['🔒','Opt-in privacy','For sensitive amounts'],
-                  ['🔄','Reversible txs','Dispute protection'],
-                ].map(([icon,title,sub])=>(
-                  <div key={title} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                    <span style={{fontSize:16,marginTop:1}}>{icon}</span>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:600}}>{title}</div>
-                      <div style={{fontSize:11,color:'rgba(255,255,255,0.45)',marginTop:1}}>{sub}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── INVOICE DETAIL / PAY LINK ────────────────────────
-function InvoiceDetail({ inv, onBack, onCopy, onMarkPaid, clientView }) {
-  const link = `${window.location.origin}${window.location.pathname}?pay=${inv.id}`;
-
-  return (
-    <div className="content">
-      <button className="btn btn-ghost btn-sm" style={{marginBottom:20,marginLeft:-8}} onClick={onBack}>← Back to Invoices</button>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:24,alignItems:'start'}}>
-        {/* Invoice preview */}
-        <div>
-          <div className="inv-preview">
-            <div className="inv-preview-header">
-              <div>
-                <div style={{fontSize:12,color:'rgba(255,255,255,0.4)',letterSpacing:'0.06em',textTransform:'uppercase',marginBottom:6}}>Invoice</div>
-                <div style={{fontSize:28,fontFamily:'Instrument Serif',fontStyle:'italic',fontWeight:400}}>{inv.num}</div>
-              </div>
-              <div style={{textAlign:'right'}}>
-                <StatusBadge status={inv.status} />
-                <div style={{fontSize:12,color:'rgba(255,255,255,0.4)',marginTop:8}}>Issued {fmtDate(inv.issueDate)}</div>
-                <div style={{fontSize:12,color:'rgba(255,255,255,0.4)'}}>Due {fmtDate(inv.dueDate)}</div>
-              </div>
-            </div>
-            <div className="inv-preview-body">
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24,marginBottom:28}}>
-                <div>
-                  <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Bill To</div>
-                  <div style={{fontWeight:600,fontSize:15}}>{inv.client}</div>
-                  <div style={{color:'var(--mid)',fontSize:13}}>{inv.clientEmail}</div>
-                  {inv.clientWallet && <div style={{fontFamily:'DM Mono',fontSize:11,color:'var(--muted)',marginTop:4}}>{shortAddr(inv.clientWallet)}</div>}
-                </div>
-                <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Amount Due</div>
-                  <div style={{fontSize:32,fontFamily:'DM Mono',fontWeight:700,letterSpacing:'-0.02em'}}>{fmt(inv.total)}</div>
-                  <div style={{fontSize:13,color:'var(--mid)'}}>{inv.currency}</div>
-                </div>
-              </div>
-
-              <table style={{width:'100%',borderCollapse:'collapse',marginBottom:16}}>
-                <thead>
-                  <tr style={{borderBottom:'1px solid var(--line)'}}>
-                    {['Description','Qty','Unit Price','Total'].map(h=>(
-                      <th key={h} style={{padding:'8px 0',fontSize:11,color:'var(--muted)',textAlign:h==='Total'||h==='Qty'?'right':'left',textTransform:'uppercase',letterSpacing:'0.06em'}}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {inv.items.map((it,i)=>(
-                    <tr key={i} style={{borderBottom:'1px solid var(--line2)'}}>
-                      <td style={{padding:'11px 0',fontSize:13}}>{it.desc}</td>
-                      <td style={{padding:'11px 0',fontSize:13,textAlign:'right',color:'var(--mid)'}}>{it.qty}</td>
-                      <td style={{padding:'11px 0',fontSize:13,textAlign:'right',fontFamily:'DM Mono',color:'var(--mid)'}}>{fmt(it.price)}</td>
-                      <td style={{padding:'11px 0',fontSize:13,textAlign:'right',fontFamily:'DM Mono',fontWeight:600}}>{fmt(it.total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div style={{display:'flex',justifyContent:'flex-end'}}>
-                <div style={{minWidth:220}}>
-                  <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',fontSize:13,color:'var(--mid)'}}>
-                    <span>Subtotal</span><span style={{fontFamily:'DM Mono'}}>{fmt(inv.subtotal)}</span>
-                  </div>
-                  {inv.tax > 0 && <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',fontSize:13,color:'var(--mid)'}}>
-                    <span>Tax</span><span style={{fontFamily:'DM Mono'}}>{fmt(inv.tax)}</span>
-                  </div>}
-                  <div style={{display:'flex',justifyContent:'space-between',padding:'10px 0',fontSize:16,fontWeight:700,fontFamily:'DM Mono',borderTop:'1px solid var(--line)',marginTop:4}}>
-                    <span>Total</span><span>{fmt(inv.total)} {inv.currency}</span>
-                  </div>
-                </div>
-              </div>
-
-              {inv.note && <div style={{marginTop:20,padding:'12px 14px',background:'var(--line2)',borderRadius:6,fontSize:13,color:'var(--mid)'}}>
-                <strong style={{color:'var(--ink)'}}>Note: </strong>{inv.note}
-              </div>}
-
-              {inv.paidAt && <div style={{marginTop:16,padding:'12px 14px',background:'var(--green-l)',borderRadius:6}}>
-                <div style={{fontSize:13,color:'var(--green-d)',fontWeight:600}}>✓ Paid on {fmtDate(inv.paidAt)}</div>
-                {inv.txHash && <div style={{fontFamily:'DM Mono',fontSize:11,color:'var(--green)',marginTop:4}}>Tx: {shortAddr(inv.txHash)}</div>}
-              </div>}
-            </div>
-          </div>
-        </div>
-
-        {/* Side actions */}
-        <div style={{display:'flex',flexDirection:'column',gap:16,position:'sticky',top:72}}>
-          {/* Pay Link */}
-          {inv.status !== 'paid' && inv.status !== 'draft' && (
-            <div className="card">
-              <div className="card-header"><span className="card-title">Payment Link</span></div>
-              <div className="card-body">
-                <p style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>Share this link with your client to accept {inv.currency} on ARC Network.</p>
-                <div className="link-box">
-                  <span className="link-url">{link}</span>
-                  <button className="btn btn-secondary btn-sm" onClick={() => onCopy(link)}>Copy</button>
-                </div>
-                <a href={`?pay=${inv.id}`} target="_blank" style={{display:'block',marginTop:10}}>
-                  <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}}>Preview Pay Page →</button>
-                </a>
-              </div>
-            </div>
-          )}
-
-          {/* Quick actions */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">Actions</span></div>
-            <div className="card-body" style={{display:'flex',flexDirection:'column',gap:8}}>
-              {inv.status !== 'paid' && !clientView && onMarkPaid && (
-                <button className="btn btn-green" style={{justifyContent:'center'}} onClick={() => onMarkPaid(inv.id)}>
-                  ✓ Mark as Paid
-                </button>
-              )}
-              <button className="btn btn-secondary" style={{justifyContent:'center'}} onClick={() => onCopy(link)}>
-                📋 Copy Pay Link
-              </button>
-              <button className="btn btn-secondary" style={{justifyContent:'center'}} onClick={() => window.print()}>
-                🖨 Print / PDF
-              </button>
-            </div>
-          </div>
-
-          {/* On-chain info */}
-          {inv.txHash && (
-            <div className="card" style={{background:'var(--line2)'}}>
-              <div className="card-body">
-                <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:10}}>On-Chain Record</div>
-                <div style={{fontSize:12,color:'var(--mid)',marginBottom:4}}>Transaction Hash</div>
-                <div style={{fontFamily:'DM Mono',fontSize:11,wordBreak:'break-all',color:'var(--ink)'}}>{inv.txHash}</div>
-                <div style={{marginTop:10,display:'flex',alignItems:'center',gap:6}}>
-                  <span className="arc-badge-sm">ARC</span>
-                  <span style={{fontSize:11,color:'var(--muted)'}}>ARC Network · Finalized</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── PAY PAGE ─────────────────────────────────────────
-function PayPage({ inv, onBack }) {
-  const [currency, setCurrency] = useState(inv.currency);
-  const [wallet, setWallet] = useState('');
-  const [step, setStep] = useState('review'); // review | confirm | done
-  const [processing, setProcessing] = useState(false);
-
-  const handlePay = () => {
-    if (!wallet.startsWith('0x') || wallet.length < 10) return alert('Enter a valid wallet address');
-    setProcessing(true);
-    setTimeout(() => { setProcessing(false); setStep('done'); }, 2200);
-  };
-
-  if (step === 'done') return (
-    <div className="pay-page">
-      <div className="pay-card">
-        <div style={{padding:'48px 32px',textAlign:'center'}}>
-          <div style={{width:64,height:64,background:'var(--green-l)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,margin:'0 auto 20px'}}>✓</div>
-          <h2 style={{fontSize:22,fontWeight:700,letterSpacing:'-0.02em',marginBottom:8}}>Payment Sent!</h2>
-          <p style={{color:'var(--mid)',fontSize:14,marginBottom:24}}>Your payment of <strong>{fmt(inv.total)} {currency}</strong> has been submitted to ARC Network.</p>
-          <div style={{background:'var(--line2)',borderRadius:8,padding:'14px 16px',fontSize:12,fontFamily:'DM Mono',color:'var(--mid)',marginBottom:24,textAlign:'left'}}>
-            <div style={{marginBottom:6,color:'var(--muted)',fontSize:11,textTransform:'uppercase',letterSpacing:'0.06em'}}>Simulated Tx Hash</div>
-            0x{Array.from({length:64},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('')}
-          </div>
-          <div className="pay-network-note"><span className="arc-badge-sm">ARC</span> Settled on ARC Network in &lt;350ms</div>
-          <button className="btn btn-secondary" style={{marginTop:20,width:'100%',justifyContent:'center'}} onClick={onBack}>← Back</button>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="pay-page">
-      <div className="pay-card">
-        <div className="pay-header">
-          <div className="pay-from">Invoice from</div>
-          <div className="pay-business">Your Business</div>
-          <div className="pay-inv-num">{inv.num} · Due {fmtDate(inv.dueDate)}</div>
-        </div>
-
-        <div className="pay-amount-block">
-          <div className="pay-amount-label">Amount Due</div>
-          <div className="pay-amount">{fmt(inv.total)}</div>
-          <div className="pay-currency">{currency} · ARC Network</div>
-        </div>
-
-        <div className="pay-body">
-          {/* Items */}
-          <div style={{fontSize:12,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:10}}>Items</div>
-          <div className="pay-items">
-            {inv.items.map((it,i) => (
-              <div className="pay-item" key={i}>
-                <span className="pay-item-name">{it.desc} {it.qty > 1 ? `×${it.qty}` : ''}</span>
-                <span className="pay-item-amount">{fmt(it.total)}</span>
-              </div>
-            ))}
-            <div className="pay-item" style={{fontWeight:600}}>
-              <span>Total</span>
-              <span style={{fontFamily:'DM Mono',color:'var(--ink)'}}>{fmt(inv.total)} {currency}</span>
-            </div>
-          </div>
-
-          {/* Currency select */}
-          <div style={{fontSize:12,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Pay with</div>
-          <div className="currency-tabs" style={{marginBottom:20}}>
-            <button className={`currency-tab ${currency==='USDC'?'active':''}`} onClick={()=>setCurrency('USDC')}>USDC</button>
-            <button className={`currency-tab ${currency==='EURC'?'active':''}`} onClick={()=>setCurrency('EURC')}>EURC</button>
-          </div>
-
-          {/* Wallet */}
-          <div style={{fontSize:12,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Your Wallet Address</div>
-          <div className="wallet-input-wrap">
-            <input
-              value={wallet}
-              onChange={e => setWallet(e.target.value)}
-              placeholder="0x..."
-            />
-          </div>
-
-          <button
-            className="btn btn-primary btn-lg"
-            style={{width:'100%',justifyContent:'center',opacity:processing?0.7:1}}
-            onClick={handlePay}
-            disabled={processing}
-          >
-            {processing ? '⏳ Processing on ARC…' : `Pay ${fmt(inv.total)} ${currency}`}
-          </button>
-
-          <div className="pay-network-note">
-            <span className="arc-badge-sm">ARC</span>
-            Powered by ARC Network · Sub-second finality · USDC gas
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── EXPORT / ACCOUNTING ─────────────────────────────
-function ExportPage({ invoices }) {
-  const exportCSV = (filter) => {
-    const rows = filter === 'all' ? invoices : invoices.filter(i => i.status === filter);
-    const header = ['Invoice #','Client','Email','Issue Date','Due Date','Currency','Subtotal','Tax','Total','Status','Paid At','Tx Hash'];
-    const lines = rows.map(i => [
-      i.num, i.client, i.clientEmail, i.issueDate, i.dueDate,
-      i.currency, i.subtotal, i.tax, i.total,
-      i.status, i.paidAt||'', i.txHash||''
-    ]);
-    const csv = [header, ...lines].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `arc-invoices-${filter}-${today()}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  };
-
-  const paid = invoices.filter(i=>i.status==='paid');
-  const totalPaid = paid.reduce((a,i)=>a+i.total,0);
-  const usdcTotal = paid.filter(i=>i.currency==='USDC').reduce((a,i)=>a+i.total,0);
-  const eurcTotal = paid.filter(i=>i.currency==='EURC').reduce((a,i)=>a+i.total,0);
-
-  return (
-    <div className="content">
-      <div className="section-top">
-        <div>
-          <h1 className="section-heading">Export & Accounting</h1>
-          <p className="text-muted fs-13 mt-4">Export invoice data for your accounting software.</p>
-        </div>
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}}>
-        {/* Summary */}
-        <div className="card">
-          <div className="card-header"><span className="card-title">Revenue Summary</span></div>
-          <div className="card-body">
-            <table style={{width:'100%',borderCollapse:'collapse'}}>
-              <tbody>
-                {[
-                  ['Total Invoiced', fmt(invoices.reduce((a,i)=>a+i.total,0)), invoices.length + ' invoices'],
-                  ['Total Collected', fmt(totalPaid), paid.length + ' paid'],
-                  ['USDC Received', fmt(usdcTotal), ''],
-                  ['EURC Received', fmt(eurcTotal), ''],
-                  ['Outstanding', fmt(invoices.filter(i=>i.status!=='paid'&&i.status!=='draft').reduce((a,i)=>a+i.total,0)), ''],
-                ].map(([label,val,sub])=>(
-                  <tr key={label} style={{borderBottom:'1px solid var(--line2)'}}>
-                    <td style={{padding:'12px 0',color:'var(--mid)',fontSize:13}}>{label}</td>
-                    <td style={{padding:'12px 0',textAlign:'right',fontFamily:'DM Mono',fontWeight:600,fontSize:14}}>{val}</td>
-                    <td style={{padding:'12px 0',textAlign:'right',color:'var(--muted)',fontSize:12,paddingLeft:12}}>{sub}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Export buttons */}
-        <div className="card">
-          <div className="card-header"><span className="card-title">Export CSV</span></div>
-          <div className="card-body" style={{display:'flex',flexDirection:'column',gap:12}}>
-            {[
-              ['All Invoices', 'all', '📊'],
-              ['Paid Only', 'paid', '✅'],
-              ['Pending', 'pending', '⏳'],
-              ['Overdue', 'overdue', '⚠️'],
-            ].map(([label,filter,icon])=>(
-              <button key={filter} className="btn btn-secondary" style={{justifyContent:'space-between',padding:'12px 16px'}}
-                onClick={()=>exportCSV(filter)}>
-                <span style={{display:'flex',alignItems:'center',gap:8}}>{icon} {label}</span>
-                <span style={{fontSize:12,color:'var(--muted)'}}>↓ CSV</span>
-              </button>
-            ))}
-            <div style={{marginTop:8,padding:'12px 14px',background:'var(--line2)',borderRadius:6,fontSize:12,color:'var(--muted)'}}>
-              CSV exports are compatible with QuickBooks, Xero, FreshBooks, and most accounting software.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Paid invoices table */}
-      <div className="card" style={{marginTop:24}}>
-        <div className="card-header"><span className="card-title">Settled Transactions</span></div>
-        {paid.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">💳</div><div className="empty-title">No paid invoices yet</div></div>
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead><tr>
-                <th>#</th><th>Client</th><th>Paid At</th><th>Amount</th><th>Currency</th><th>Tx Hash</th>
-              </tr></thead>
-              <tbody>
-                {paid.map(inv=>(
-                  <tr key={inv.id}>
-                    <td className="td-mono">{inv.num}</td>
-                    <td><span className="fw-600">{inv.client}</span></td>
-                    <td className="td-mono">{fmtDate(inv.paidAt)}</td>
-                    <td><span className="text-mono fw-600">{fmt(inv.total)}</span></td>
-                    <td><span className={`badge ${inv.currency==='USDC'?'badge-blue':'badge-green'}`}>{inv.currency}</span></td>
-                    <td>
-                      {inv.txHash
-                        ? <span className="td-mono" title={inv.txHash}>{shortAddr(inv.txHash)}</span>
-                        : <span className="text-muted">—</span>
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── SUPABASE CONFIG ──────────────────────────────────
-// Replace the three values below, save file, push to GitHub → Vercel redeploys
-const SUPABASE_URL      = 'https://vodzhmbtctnhhlqbshdf.supabase.co';        // https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZHpobWJ0Y3RuaGhscWJzaGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTgyMzYsImV4cCI6MjA4ODYzNDIzNn0.81nrIRvDoBBDaX_YW_7c1XpNwdJTLrQoSx_8E_WzW3w';   // eyJhbGci...
-const OWNER_EMAIL       = 'zhekinmaksim@gmail.com';   // only you see the full dashboard
-const NOT_CONFIGURED    = SUPABASE_URL === 'YOUR_SUPABASE_URL';
-
-// ─── SUPABASE CLIENT (no npm) ─────────────────────────
-const sb = (() => {
-  const base   = () => ({ 'Content-Type':'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization':`Bearer ${SUPABASE_ANON_KEY}` });
-  const authed = (t) => ({ ...base(), 'Authorization':`Bearer ${t}` });
-
-  return {
-    // Auth
-    signInWithEmail:  (e,p)     => fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:base(),body:JSON.stringify({email:e,password:p})}).then(r=>r.json()),
-    signUpWithEmail:  (e,p)     => fetch(`${SUPABASE_URL}/auth/v1/signup`,{method:'POST',headers:base(),body:JSON.stringify({email:e,password:p})}).then(r=>r.json()),
-    sendMagicLink:    (e)       => fetch(`${SUPABASE_URL}/auth/v1/magiclink`,{method:'POST',headers:base(),body:JSON.stringify({email:e})}).then(r=>r.json()),
-    signOut:          (t)       => fetch(`${SUPABASE_URL}/auth/v1/logout`,{method:'POST',headers:authed(t)}),
-    getUser:          (t)       => fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:authed(t)}).then(r=>r.json()),
-    // Handle magic link token from URL hash
-    sessionFromHash: async ()  => {
-      const hash = new URLSearchParams(window.location.hash.slice(1));
-      const access_token = hash.get('access_token');
-      const refresh_token = hash.get('refresh_token');
-      if (!access_token) return null;
-      window.history.replaceState({}, '', window.location.pathname + window.location.search);
-      return { access_token, refresh_token };
-    },
-    // Invoices (owner)
-    getInvoices:    (t)         => fetch(`${SUPABASE_URL}/rest/v1/invoices?select=*&order=created_at.desc`,{headers:authed(t)}).then(r=>r.json()),
-    insertInvoice:  (t,row)     => fetch(`${SUPABASE_URL}/rest/v1/invoices`,{method:'POST',headers:{...authed(t),'Prefer':'return=representation'},body:JSON.stringify(row)}).then(r=>r.json()),
-    updateInvoice:  (t,id,data) => fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{...authed(t),'Prefer':'return=representation'},body:JSON.stringify(data)}).then(r=>r.json()),
-    deleteAll:      (t)         => fetch(`${SUPABASE_URL}/rest/v1/invoices?created_at=gte.1970-01-01`,{method:'DELETE',headers:authed(t)}),
-    // Client: get invoices by their email
-    getClientInvoices: (t, email) => fetch(`${SUPABASE_URL}/rest/v1/invoices?select=*&client_email=eq.${encodeURIComponent(email)}&order=created_at.desc`,{headers:authed(t)}).then(r=>r.json()),
-    // Public: get single invoice for pay page (needs anon select policy)
-    getPublicInvoice: (id) => fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${encodeURIComponent(id)}&select=data`,{headers:base()}).then(r=>r.json()),
-  };
-})();
-
-// ─── SETUP SCREEN ─────────────────────────────────────
-function SetupScreen() {
-  const sql = `-- Run this in Supabase → SQL Editor
-
-CREATE TABLE invoices (
-  id           TEXT PRIMARY KEY,
-  client_email TEXT,
-  user_id      UUID REFERENCES auth.users,
-  data         JSONB NOT NULL,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-
--- Owner sees all their invoices
-CREATE POLICY "owner_all" ON invoices
-  FOR ALL USING (auth.uid() = user_id);
-
--- Clients see only invoices addressed to their email
-CREATE POLICY "client_read" ON invoices
-  FOR SELECT USING (client_email = auth.jwt()->>'email');
-
--- Public can read a single invoice by id (for pay page)
-CREATE POLICY "public_pay" ON invoices
-  FOR SELECT USING (true);`;
-
-  const [copied, setCopied] = useState(false);
-  const copy = () => { navigator.clipboard?.writeText(sql); setCopied(true); setTimeout(()=>setCopied(false),2000); };
-
-  return (
-    <div style={{minHeight:'100vh',background:'var(--page)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:580}}>
-        <div style={{textAlign:'center',marginBottom:32}}>
-          <div style={{width:48,height:48,background:'var(--ink)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px',fontFamily:'DM Mono',fontSize:14,color:'#fff'}}>ARC</div>
-          <h1 style={{fontSize:22,fontWeight:700,letterSpacing:'-0.02em',marginBottom:4}}>One-time Setup</h1>
-          <p style={{fontSize:13,color:'var(--muted)'}}>5 minutes · Free · No credit card</p>
-        </div>
-        <div className="card">
-          <div className="card-body">
-            {[
-              { n:1, title:'Create Supabase project', desc:<>Go to <a href="https://supabase.com" target="_blank" style={{color:'var(--blue)'}}>supabase.com</a> → New Project. Pick any name, set DB password, choose EU region.</> },
-              { n:2, title:'Enable Email Auth + Magic Links', desc:'Authentication → Providers → Email → enable "Enable Email Confirmations" off (for testing) and turn on "Magic Link".' },
-              { n:3, title:'Create invoices table', desc:'SQL Editor → paste and run the SQL below:',
-                extra: <div style={{position:'relative',marginTop:10}}>
-                  <pre style={{background:'var(--ink)',color:'#86efac',padding:'14px 16px',borderRadius:8,fontSize:11,lineHeight:1.7,overflowX:'auto',fontFamily:'DM Mono',whiteSpace:'pre'}}>{sql}</pre>
-                  <button onClick={copy} className="btn btn-secondary btn-sm" style={{position:'absolute',top:10,right:10,fontSize:11}}>{copied ? '✓ Copied' : 'Copy SQL'}</button>
-                </div>
-              },
-              { n:4, title:'Get API keys', desc:'Project Settings → API → copy Project URL and anon public key.' },
-              { n:5, title:'Edit index.html (3 lines)', desc:'Find the CONFIG section near the top of the JS and replace:',
-                extra: <pre style={{background:'var(--ink)',color:'#7dd3fc',padding:'12px 14px',borderRadius:7,fontSize:11,lineHeight:1.8,marginTop:8,fontFamily:'DM Mono'}}>{`const SUPABASE_URL      = 'https://xxxx.supabase.co';\nconst SUPABASE_ANON_KEY = 'eyJhbGci...';\nconst OWNER_EMAIL       = 'you@youremail.com';`}</pre>
-              },
-              { n:6, title:'Push to GitHub → Vercel redeploys', desc:'Done. You get the owner dashboard. Clients get magic link login and see only their invoices.' },
-            ].map((s,i,arr) => (
-              <div key={s.n} style={{display:'flex',gap:16,padding:'18px 0',borderBottom:i<arr.length-1?'1px solid var(--line2)':'none'}}>
-                <div style={{width:26,height:26,borderRadius:'50%',background:'var(--ink)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,flexShrink:0,marginTop:2}}>{s.n}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:600,fontSize:14,marginBottom:4}}>{s.title}</div>
-                  <div style={{fontSize:13,color:'var(--mid)',lineHeight:1.6}}>{s.desc}</div>
-                  {s.extra}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── OWNER AUTH SCREEN ────────────────────────────────
-function OwnerAuthScreen({ onAuth }) {
-  const [email, setEmail] = useState('');
-  const [pass, setPass]   = useState('');
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
-
-  const submit = async () => {
-    if (!email||!pass) return setErr('Enter email and password');
-    setLoading(true); setErr('');
-    const res = await sb.signInWithEmail(email, pass).catch(()=>({error:{message:'Network error'}}));
-    if (res.error) setErr(res.error.message||'Login failed');
-    else if (res.access_token) onAuth(res.access_token, res.user);
-    else setErr('Unexpected response');
-    setLoading(false);
-  };
-
-  return (
-    <div style={{minHeight:'100vh',background:'var(--page)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:380}}>
-        <div style={{textAlign:'center',marginBottom:36}}>
-          <div style={{width:48,height:48,background:'var(--ink)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px',fontFamily:'DM Mono',fontSize:14,color:'#fff'}}>ARC</div>
-          <h1 style={{fontSize:22,fontWeight:700,letterSpacing:'-0.02em',marginBottom:4}}>ARC Invoice</h1>
-          <p style={{fontSize:13,color:'var(--muted)'}}>Owner access</p>
-        </div>
-        <div className="card" style={{padding:28}}>
-          <div style={{display:'flex',flexDirection:'column',gap:14}}>
-            <div className="field"><label>Email</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==='Enter'&&submit()} autoFocus />
-            </div>
-            <div className="field"><label>Password</label>
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" onKeyDown={e=>e.key==='Enter'&&submit()} />
-            </div>
-            {err && <div style={{fontSize:12,color:'var(--red)',padding:'8px 12px',background:'var(--red-l)',borderRadius:6}}>{err}</div>}
-            <button className="btn btn-primary btn-lg" style={{justifyContent:'center',opacity:loading?0.6:1}} onClick={submit} disabled={loading}>
-              {loading?'Signing in…':'Sign In'}
-            </button>
-          </div>
-          <p style={{marginTop:16,fontSize:12,color:'var(--muted)',textAlign:'center'}}>Your clients sign in via magic link — no password needed for them.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── CLIENT AUTH SCREEN (magic link) ─────────────────
-function ClientAuthScreen({ onAuth }) {
-  const [email, setEmail] = useState('');
-  const [sent, setSent]   = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
-
-  const send = async () => {
-    if (!email) return setErr('Enter your email');
-    setLoading(true); setErr('');
-    const res = await sb.sendMagicLink(email).catch(()=>({error:{message:'Network error'}}));
-    if (res && res.error) setErr(res.error.message||'Failed to send');
-    else setSent(true);
-    setLoading(false);
-  };
-
-  return (
-    <div style={{minHeight:'100vh',background:'var(--page)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:380}}>
-        <div style={{textAlign:'center',marginBottom:36}}>
-          <div style={{width:48,height:48,background:'var(--ink)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px',fontFamily:'DM Mono',fontSize:14,color:'#fff'}}>ARC</div>
-          <h1 style={{fontSize:22,fontWeight:700,letterSpacing:'-0.02em',marginBottom:4}}>Client Portal</h1>
-          <p style={{fontSize:13,color:'var(--muted)'}}>View your invoices & pay securely</p>
-        </div>
-        <div className="card" style={{padding:28}}>
-          {sent ? (
-            <div style={{textAlign:'center',padding:'16px 0'}}>
-              <div style={{fontSize:36,marginBottom:14}}>📬</div>
-              <div style={{fontWeight:600,fontSize:16,marginBottom:8}}>Check your inbox</div>
-              <div style={{fontSize:13,color:'var(--mid)',lineHeight:1.6}}>We sent a sign-in link to <strong>{email}</strong>. Click it to access your invoices — no password needed.</div>
-              <button className="btn btn-ghost btn-sm" style={{marginTop:16}} onClick={()=>{setSent(false);setEmail('');}}>Use a different email</button>
-            </div>
-          ) : (
-            <div style={{display:'flex',flexDirection:'column',gap:14}}>
-              <div className="field"><label>Your Email</label>
-                <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==='Enter'&&send()} autoFocus />
-              </div>
-              {err && <div style={{fontSize:12,color:'var(--red)',padding:'8px 12px',background:'var(--red-l)',borderRadius:6}}>{err}</div>}
-              <button className="btn btn-primary btn-lg" style={{justifyContent:'center',opacity:loading?0.6:1}} onClick={send} disabled={loading}>
-                {loading?'Sending…':'Send Magic Link'}
-              </button>
-              <p style={{fontSize:12,color:'var(--muted)',textAlign:'center',lineHeight:1.5}}>We'll email you a one-click sign-in link. No password required.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── CLIENT DASHBOARD ────────────────────────────────
-function ClientDashboard({ invoices, user, onView, onSignOut }) {
-  return (
-    <div style={{minHeight:'100vh',background:'var(--page)'}}>
-      {/* Simple topbar */}
-      <div style={{background:'var(--white)',borderBottom:'1px solid var(--line)',padding:'0 24px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <div style={{width:28,height:28,background:'var(--ink)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'DM Mono',fontSize:10,color:'#fff'}}>ARC</div>
-          <span style={{fontWeight:600,fontSize:14}}>My Invoices</span>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:12,color:'var(--muted)'}}>{user?.email}</span>
-          <button className="btn btn-ghost btn-sm" onClick={onSignOut}>Sign out</button>
-        </div>
-      </div>
-
-      <div style={{maxWidth:720,margin:'0 auto',padding:'32px 24px'}}>
-        {invoices.length === 0 ? (
-          <div style={{textAlign:'center',padding:'80px 24px'}}>
-            <div style={{fontSize:40,marginBottom:14}}>📄</div>
-            <div style={{fontWeight:600,fontSize:16,marginBottom:6}}>No invoices yet</div>
-            <div style={{fontSize:13,color:'var(--muted)'}}>Your invoices will appear here once issued.</div>
-          </div>
-        ) : (
-          <div style={{display:'flex',flexDirection:'column',gap:12}}>
-            <div style={{fontSize:13,color:'var(--muted)',marginBottom:4}}>{invoices.length} invoice{invoices.length!==1?'s':''}</div>
-            {invoices.map(inv => (
-              <div key={inv.id} className="card" style={{padding:0,overflow:'hidden',cursor:'pointer'}} onClick={()=>onView(inv)}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:16,padding:'18px 20px',alignItems:'center'}}>
-                  <div>
-                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
-                      <span style={{fontFamily:'DM Mono',fontSize:12,color:'var(--mid)'}}>{inv.num}</span>
-                      <StatusBadge status={inv.status} />
-                    </div>
-                    <div style={{fontSize:13,color:'var(--mid)'}}>Due {fmtDate(inv.dueDate)}</div>
-                    {inv.note && <div style={{fontSize:12,color:'var(--muted)',marginTop:4}}>{inv.note}</div>}
-                  </div>
-                  <div style={{textAlign:'right'}}>
-                    <div style={{fontFamily:'DM Mono',fontSize:20,fontWeight:700,letterSpacing:'-0.02em'}}>{fmt(inv.total)}</div>
-                    <div style={{fontSize:12,color:'var(--mid)',marginTop:2}}>{inv.currency}</div>
-                  </div>
-                </div>
-                {(inv.status==='pending'||inv.status==='overdue') && (
-                  <div style={{borderTop:'1px solid var(--line2)',padding:'12px 20px',background:'var(--line2)',display:'flex',justifyContent:'flex-end'}}>
-                    <span style={{fontSize:12,color:'var(--blue)',fontWeight:500}}>View & Pay →</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── ROOT APP ─────────────────────────────────────────
-function App() {
-  const [session, setSession]   = useState(null);   // { token, user }
-  const [role, setRole]         = useState(null);   // 'owner' | 'client'
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [page, setPage]         = useState('dashboard');
-  const [selected, setSelected] = useState(null);
-  const [toasts, setToasts]     = useState([]);
-  const counter = React.useRef(1);
-
-  const addToast = (msg, icon='✓') => {
-    const id = Date.now();
-    setToasts(p=>[...p,{id,msg,icon}]);
-    setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3000);
-  };
-
-  // ── Bootstrap: check for saved session & magic link hash ──
-  useEffect(() => {
-    (async () => {
-      if (NOT_CONFIGURED) { setLoading(false); return; }
-
-      // 1. Magic link landing (hash in URL)
-      const hashSession = await sb.sessionFromHash();
-      if (hashSession) {
-        const u = await sb.getUser(hashSession.access_token);
-        if (u && u.id) {
-          const r = u.email === OWNER_EMAIL ? 'owner' : 'client';
-          setSession({ token: hashSession.access_token, user: u });
-          setRole(r);
-          try { localStorage.setItem('arc_token', hashSession.access_token); } catch{}
-          await fetchInvoices(hashSession.access_token, r, u.email);
-          setLoading(false); return;
-        }
+    if (!r.ok) {
+      addLog('err', j.error || 'Request failed');
+      if ((j.error||'').toLowerCase().includes('balance') || (j.error||'').toLowerCase().includes('insufficient')) {
+        addLog('info', 'Top up at faucet.circle.com (select Arc Testnet)');
+        toast('Insufficient balance — top up at faucet.circle.com', 'warn');
+      } else {
+        toast(j.error || 'Error', 'err');
       }
-
-      // 2. Persisted token
-      let stored = null;
-      try { stored = localStorage.getItem('arc_token'); } catch{}
-      if (stored) {
-        const u = await sb.getUser(stored).catch(()=>null);
-        if (u && u.id) {
-          const r = u.email === OWNER_EMAIL ? 'owner' : 'client';
-          setSession({ token: stored, user: u });
-          setRole(r);
-          await fetchInvoices(stored, r, u.email);
-          setLoading(false); return;
-        }
-        try { localStorage.removeItem('arc_token'); } catch{}
-      }
-      setLoading(false);
-    })();
-  }, []);
-
-  const fetchInvoices = async (token, role, email) => {
-    const rows = role === 'owner'
-      ? await sb.getInvoices(token).catch(()=>[])
-      : await sb.getClientInvoices(token, email).catch(()=>[]);
-    if (Array.isArray(rows)) {
-      const list = rows.map(r => r.data || r).filter(Boolean);
-      setInvoices(list);
-      counter.current = list.length + 1;
-    }
-  };
-
-  const handleAuth = async (token, user) => {
-    const r = user.email === OWNER_EMAIL ? 'owner' : 'client';
-    setSession({ token, user });
-    setRole(r);
-    try { localStorage.setItem('arc_token', token); } catch{}
-    await fetchInvoices(token, r, user.email);
-  };
-
-  const handleSignOut = async () => {
-    if (session) await sb.signOut(session.token).catch(()=>{});
-    setSession(null); setRole(null); setInvoices([]);
-    try { localStorage.removeItem('arc_token'); } catch{}
-  };
-
-  // ── Owner actions ──
-  const handleSave = async (inv) => {
-    const row = { id: inv.id, client_email: inv.clientEmail||null, user_id: session.user.id, data: inv };
-    const res = await sb.insertInvoice(session.token, row).catch(()=>null);
-    if (res && !res.error) {
-      setInvoices(p=>[...p,inv]);
-      counter.current++;
-      addToast(`${inv.num} ${inv.status==='draft'?'saved as draft':'sent to '+inv.client}`, inv.status==='draft'?'📝':'✉️');
-      setPage('dashboard');
     } else {
-      addToast('Save failed — check Supabase setup','⚠️');
+      const p = j.payment;
+      addLog('pay', 'ARC tx: ' + p.tx_hash.slice(0,20) + '...');
+      addLog('pay', 'Confirmed in ' + p.finality_ms + 'ms');
+      addLog('call', api.name + ' responded (' + j.api.latency_ms + 'ms)');
+      if (j.data) addLog('info', JSON.stringify(j.data).slice(0, 90));
+
+      S.balance = Math.max(0, +(S.balance - 0.001).toFixed(4));
+      S.txs.unshift({ ts: now(), api: api.name, amount: 0.001, tx: p.tx_hash, explorer: p.explorer });
+      S.apis = S.apis.map(a => a.id === api.id ? {...a, calls: a.calls+1, rev: +(a.rev+0.001).toFixed(4)} : a);
+
+      $('play-resp-card').style.display = 'block';
+      $('play-resp-body').textContent = JSON.stringify(j, null, 2);
+      $('play-txcount').textContent = S.txs.length + ' txs';
+      $('hdr-txs').textContent = S.txs.length + ' txs';
+      renderTxTable('play-txs');
+      syncBalance();
+      toast('Called ' + api.name + ' · $0.001 USDC settled onchain');
     }
-  };
-
-  const handleMarkPaid = async (id) => {
-    const txHash = '0x'+Array.from({length:64},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
-    const paidAt = today();
-    const updated = invoices.map(inv => inv.id===id ? {...inv,status:'paid',paidAt,txHash} : inv);
-    const inv = updated.find(i=>i.id===id);
-    await sb.updateInvoice(session.token, id, {data:inv}).catch(()=>{});
-    setInvoices(updated);
-    setSelected(p=>p?{...p,status:'paid',paidAt}:null);
-    addToast('Marked as paid','✓');
-  };
-
-  const handleClearData = async () => {
-    if (!window.confirm('Delete ALL invoices? Cannot be undone.')) return;
-    await sb.deleteAll(session.token).catch(()=>{});
-    setInvoices([]); counter.current=1; setPage('dashboard');
-    addToast('All data cleared','🗑️');
-  };
-
-  const handleCopy = (txt) => {
-    navigator.clipboard?.writeText(txt).catch(()=>{});
-    addToast('Copied to clipboard','📋');
-  };
-
-  // ── PAY PAGE — detected by ?pay= in URL, no auth needed ──
-  const urlParams = new URLSearchParams(window.location.search);
-  const payId = urlParams.get('pay');
-  if (payId && !loading) {
-    return <PayPageLoader payId={payId} />;
+  } catch(e) {
+    addLog('err', 'Network error: ' + e.message);
+    toast('Network error', 'err');
   }
 
-  // ── Screens ──
-  if (loading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--page)'}}>
-      <div style={{fontFamily:'DM Mono',fontSize:13,color:'var(--muted)'}}>Loading…</div>
-    </div>
-  );
-  if (NOT_CONFIGURED) return <SetupScreen />;
-
-  // Login gate: show appropriate screen based on URL param ?role=client or default owner
-  if (!session) {
-    const wantClient = new URLSearchParams(window.location.search).get('role') === 'client';
-    if (wantClient) return <ClientAuthScreen onAuth={handleAuth} />;
-    return (
-      <div>
-        <OwnerAuthScreen onAuth={handleAuth} />
-        <div style={{textAlign:'center',marginTop:-8,paddingBottom:24}}>
-          <a href="?role=client" style={{fontSize:12,color:'var(--muted)'}}>Client? Sign in here →</a>
-        </div>
-      </div>
-    );
-  }
-
-  // ── CLIENT VIEW ──
-  if (role === 'client') {
-    if (selected) return (
-      <div>
-        <div style={{background:'var(--white)',borderBottom:'1px solid var(--line)',padding:'0 24px',height:56,display:'flex',alignItems:'center',gap:12}}>
-          <button className="btn btn-ghost btn-sm" onClick={()=>setSelected(null)}>← Back</button>
-          <span style={{fontWeight:600,fontSize:14}}>{selected.num}</span>
-        </div>
-        <div style={{maxWidth:720,margin:'32px auto',padding:'0 24px'}}>
-          <InvoiceDetail
-            inv={selected}
-            onBack={()=>setSelected(null)}
-            onCopy={handleCopy}
-            onMarkPaid={null}
-            clientView={true}
-          />
-        </div>
-      </div>
-    );
-    return <ClientDashboard invoices={invoices} user={session.user} onView={setSelected} onSignOut={handleSignOut} />;
-  }
-
-  // ── OWNER VIEW ──
-  const navItems = [
-    { id:'dashboard', icon:'▦', label:'Invoices' },
-    { id:'new',       icon:'+', label:'New Invoice' },
-    { id:'export',    icon:'↓', label:'Export' },
-    { id:'clear',     icon:'⊘', label:'Clear Data' },
-  ];
-
-  const renderPage = () => {
-    if (page==='new') return <NewInvoiceForm onSave={handleSave} onCancel={()=>setPage('dashboard')} counter={counter.current} />;
-    if (page==='detail'&&selected) return (
-      <InvoiceDetail
-        inv={invoices.find(i=>i.id===selected.id)||selected}
-        onBack={()=>{setPage('dashboard');setSelected(null);}}
-        onCopy={handleCopy}
-        onMarkPaid={handleMarkPaid}
-        clientView={false}
-      />
-    );
-    if (page==='export') return <ExportPage invoices={invoices} />;
-    return <Dashboard invoices={invoices} onNew={()=>setPage('new')}
-      onView={inv=>{setSelected(inv);setPage('detail');}}
-      onPay={inv=>handleCopy(`${window.location.origin}${window.location.pathname}?pay=${inv.id}`)} />;
-  };
-
-  return (
-    <div className="app">
-      <nav className="sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-mark">
-            <div className="logo-icon">ARC</div>
-            <div><div className="logo-text">Invoice</div><div className="logo-sub">STABLECOIN BILLING</div></div>
-          </div>
-        </div>
-        <div className="sidebar-nav">
-          {navItems.map(n=>(
-            <button key={n.id}
-              className={`nav-item ${page===n.id||(n.id==='dashboard'&&page==='detail')?'active':''}`}
-              onClick={()=>{ if(n.id==='clear'){handleClearData();return;} setPage(n.id); if(n.id==='dashboard')setSelected(null); }}>
-              <span className="nav-icon">{n.icon}</span>
-              <span>{n.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="sidebar-footer">
-          <div className="network-badge" style={{flexDirection:'column',alignItems:'flex-start',gap:8}}>
-            <div style={{display:'flex',alignItems:'center',gap:8,width:'100%'}}>
-              <div className="net-dot"></div>
-              <div><div className="net-name">ARC Network</div><div className="net-text">TESTNET · LIVE</div></div>
-            </div>
-            <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.06)'}}></div>
-            <div style={{width:'100%'}}>
-              <div style={{fontSize:11,color:'rgba(255,255,255,0.35)',marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{session.user?.email}</div>
-              <button onClick={handleSignOut} style={{fontSize:11,color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',padding:0,fontFamily:'DM Sans'}}>Sign out →</button>
-            </div>
-          </div>
-        </div>
-      </nav>
-      <div className="main">
-        <div className="topbar">
-          <span className="topbar-title">
-            {page==='dashboard'||page==='detail'?'Invoices':page==='new'?'New Invoice':'Export'}
-          </span>
-          <div className="topbar-right">
-            <span style={{fontFamily:'DM Mono',fontSize:11,color:'var(--muted)'}}>ARC · USDC/EURC</span>
-            <span className="arc-badge-sm" style={{fontSize:11}}>TESTNET</span>
-          </div>
-        </div>
-        {renderPage()}
-      </div>
-      <div className="toast-wrap">{toasts.map(t=><Toast key={t.id} msg={t.msg} icon={t.icon}/>)}</div>
-    </div>
-  );
+  S.calling = false;
+  btn.disabled = false;
+  btn.textContent = 'Pay $0.001 & Call API';
 }
 
-// ─── PAY PAGE LOADER (fetches public invoice) ─────────
-function PayPageLoader({ payId }) {
-  const [inv, setInv]   = useState(null);
-  const [err, setErr]   = useState(false);
-  useEffect(()=>{
-    sb.getPublicInvoice(payId).then(rows=>{
-      if (rows&&rows[0]) setInv(rows[0].data||rows[0]);
-      else setErr(true);
-    }).catch(()=>setErr(true));
-  },[]);
-  if (!inv&&!err) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'DM Mono',fontSize:13,color:'var(--muted)'}}>Loading invoice…</div>;
-  if (err) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'DM Mono',fontSize:13,color:'var(--red)'}}>Invoice not found.</div>;
-  return <PayPage inv={inv} onBack={()=>{window.history.pushState({},'',window.location.pathname);window.location.reload();}}/>;
+// ── WALLET ─────────────────────────────────
+function renderWallet() {
+  const hasWallet = S.key && S.key.startsWith('apk_');
+  $('wallet-left').innerHTML = hasWallet ? `
+    <div class="balance-hero">
+      <div class="balance-hero-label">USDC BALANCE &bull; Arc Testnet</div>
+      <div class="balance-num" id="wallet-balance-num">${fmtU(S.balance)}</div>
+      <div class="balance-denom">USDC</div>
+      <div class="balance-calls" id="wallet-balance-calls">~ ${Math.floor(S.balance/0.001).toLocaleString()} API calls remaining</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Credentials</span></div>
+      <div class="card-body">
+        <div class="form-stack">
+          <div class="field mono-field">
+            <div class="field-label">Agent key</div>
+            <input readonly value="${S.key}" onclick="this.select()" style="cursor:pointer;color:var(--blue2)">
+          </div>
+          <div class="field mono-field">
+            <div class="field-label">Arc address</div>
+            <input readonly value="${S.addr}" onclick="this.select()" style="cursor:pointer">
+          </div>
+        </div>
+        <div class="row g8 mt12">
+          <a href="https://testnet.arcscan.app/address/${S.addr}" target="_blank" class="btn btn-secondary" style="flex:1;justify-content:center">View on explorer</a>
+          <button class="btn btn-secondary" style="flex:1" onclick="refreshBalance()">Refresh balance</button>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-primary btn-block" onclick="window.open('https://faucet.circle.com','_blank')">
+          Fund wallet on Arc Testnet &rarr;
+        </button>
+        <p class="c3 f12 mono" style="text-align:center;margin-top:8px">faucet.circle.com &rarr; Arc Testnet &rarr; paste address &rarr; 10 USDC free</p>
+      </div>
+    </div>` : `
+    <div class="card" style="border-color:var(--blue-b)">
+      <div class="card-body" style="text-align:center;padding:32px 24px">
+        <div style="width:46px;height:46px;background:var(--blue-d);border:1px solid var(--blue-b);border-radius:10px;display:grid;place-items:center;margin:0 auto 16px;font-size:20px;box-shadow:0 0 20px rgba(75,139,255,0.15)">&#9673;</div>
+        <div style="font-size:16px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px">Create your wallet</div>
+        <p class="c3 f13" style="line-height:1.6;margin-bottom:22px">
+          Creates a real wallet on Arc Testnet. You get an Arc address and an agent key to use in API calls.
+        </p>
+        <button id="wallet-create-btn" class="btn btn-primary btn-block btn-lg" onclick="createWallet()">
+          Create wallet
+        </button>
+        <p class="c3 f12 mono" style="margin-top:10px">Free &middot; Powered by Circle</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Getting started</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Create your wallet here</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Go to faucet.circle.com and select Arc Testnet</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Paste your Arc address. Receive 10 USDC free.</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-text">Use your agent key in Playground to make real onchain API calls.</div></div>
+        </div>
+      </div>
+    </div>`;
+  renderTxTable('wallet-txs');
+  $('wallet-txcount').textContent = S.txs.length + ' records';
+  syncBalance();
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+async function createWallet() {
+  const btn = $('wallet-create-btn'); if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+  try {
+    const r = await fetch('/api/wallet', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action:'create'}) });
+    const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Failed');
+    S.key = d.agent_key; S.addr = d.arc_address; S.balance = 0;
+    localStorage.setItem('ag_k', S.key); localStorage.setItem('ag_a', S.addr);
+    renderWallet(); syncBalance(); toast('Wallet created — get USDC at faucet.circle.com');
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
+  }
+}
+
+async function refreshBalance() {
+  if (!S.key) return;
+  try {
+    const r = await fetch('/api/wallet', { headers: {'Authorization': 'Bearer ' + S.key} });
+    const d = await r.json();
+    if (r.ok && d.balance_usdc !== undefined) { S.balance = d.balance_usdc; syncBalance(); toast('Balance: ' + fmtU(S.balance) + ' USDC'); }
+  } catch(e) { toast('Refresh failed', 'err'); }
+}
+
+// ── WEBHOOKS ────────────────────────────────
+async function loadWebhooks() {
+  if (!S.key) return;
+  const r = await fetch('/api/webhooks', { headers: {'Authorization': 'Bearer ' + S.key} }).catch(() => null);
+  if (r && r.ok) S.webhooks = (await r.json()).subscriptions || [];
+  renderWebhooks();
+}
+
+function renderWebhooks() {
+  $('wh-count').textContent = S.webhooks.length + ' / 10';
+  if (!S.webhooks.length) {
+    $('wh-list').innerHTML = '<div class="empty"><div class="empty-icon">&#10548;</div><div class="empty-title">No subscriptions</div><div class="empty-desc">Create one to start receiving notifications.</div></div>';
+    return;
+  }
+  $('wh-list').innerHTML = S.webhooks.map(w => `
+    <div class="wh-item">
+      <div class="row-between mb8">
+        <div class="row g8">
+          <span class="chip ${w.active ? 'ch-grn' : 'ch-dim'}" style="font-size:9px">${w.active ? 'ACTIVE' : 'PAUSED'}</span>
+          ${w.events.map(e => `<span class="chip ch-blue" style="font-size:9px">${e}</span>`).join('')}
+        </div>
+        <div class="row g6">
+          <span class="mono fw6" style="font-size:16px;color:var(--grn)">${w.deliveries_total||0}</span>
+          <span class="c3 f12">delivered</span>
+        </div>
+      </div>
+      <div class="c3 f12 mono mb8" style="letter-spacing:0.06em">WATCHING</div>
+      <div class="mono c-blue f12 mb8" style="font-size:11.5px">${w.arc_address}</div>
+      <div class="c3 f12 mono mb4" style="letter-spacing:0.06em">TO</div>
+      <div class="mono c2" style="font-size:11px;word-break:break-all;margin-bottom:12px">${w.url}</div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div class="row g8">
+        <span class="c3 f12 mono" style="flex:1">${w.last_triggered ? 'Last: ' + new Date(w.last_triggered).toLocaleTimeString() : 'Not triggered yet'}</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyText('${w.secret||''}', 'Secret copied')">Copy secret</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteWebhook('${w.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function createWebhook() {
+  if (!S.key) { toast('Create a wallet first', 'warn'); return; }
+  const addr = $('wh-addr').value.trim(), url = $('wh-url').value.trim();
+  const events = Array.from(document.querySelectorAll('.ev-cb:checked')).map(e => e.value);
+  if (!addr) { toast('Enter an Arc address', 'warn'); return; }
+  if (!url)  { toast('Enter your webhook URL', 'warn'); return; }
+  if (!events.length) { toast('Select at least one event', 'warn'); return; }
+  const btn = $('wh-btn'); btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const r = await fetch('/api/webhooks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + S.key },
+      body: JSON.stringify({ arc_address: addr, url, events }),
+    });
+    const d = await r.json();
+    if (r.ok) { S.webhooks.unshift(d.subscription); $('wh-addr').value = ''; $('wh-url').value = ''; renderWebhooks(); toast('Webhook created'); }
+    else toast(d.error || 'Failed', 'err');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  btn.disabled = false; btn.textContent = 'Create webhook';
+}
+
+async function deleteWebhook(id) {
+  await fetch('/api/webhooks?id=' + id, { method: 'DELETE', headers: {'Authorization': 'Bearer ' + S.key} }).catch(() => {});
+  S.webhooks = S.webhooks.filter(w => w.id !== id);
+  renderWebhooks(); toast('Webhook deleted');
+}
+
+// ── MY APIs ─────────────────────────────────
+function renderMyApis() {
+  if (!S.myApis.length) {
+    $('myapis-list').innerHTML = '<div class="empty"><div class="empty-icon">&#43;</div><div class="empty-title">No APIs registered yet</div><div class="empty-desc">Deploy your API. Agents pay $0.001 USDC per call, settled onchain on Arc.</div><button class="btn btn-primary mt12" onclick="openRegisterModal()">Register API</button></div>';
+    return;
+  }
+  $('myapis-list').innerHTML = S.myApis.map(api => `
+    <div class="my-api-row">
+      <div>
+        <div class="row g8 mb8">
+          <span style="font-size:14px;font-weight:600">${api.name}</span>
+          <span class="chip ch-dim">${api.cat}</span>
+          <span class="chip ch-grn" style="font-size:9px">Live</span>
+        </div>
+        <div class="c3 f13" style="margin-bottom:8px;line-height:1.55">${api.desc || 'No description'}</div>
+        <span class="api-endpoint" style="display:inline-block">${api.ep}</span>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="my-earn">${fmtU(api.rev||0)}</div>
+        <div class="c3 f12 mt4">USDC earned</div>
+        <div class="c3 f12 mt4">${fmtN(api.calls||0)} calls</div>
+        <button class="btn btn-danger btn-sm mt8" onclick="removeMyApi('${api.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function removeMyApi(id) {
+  S.myApis = S.myApis.filter(a => a.id !== id);
+  S.apis = S.apis.filter(a => a.id !== id);
+  renderMyApis(); toast('API removed');
+}
+
+// ── MODAL ───────────────────────────────────
+function openRegisterModal() {
+  $('modal-title').textContent = 'Register API';
+  $('modal-body').innerHTML = `
+    <div class="form-stack">
+      <div class="form-row">
+        <div class="field"><div class="field-label">Name *</div><input id="reg-name" placeholder="My API"></div>
+        <div class="field"><div class="field-label">Category</div>
+          <select id="reg-cat"><option>Data</option><option>Finance</option><option>Infra</option><option>AI</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="field mono-field"><div class="field-label">Endpoint *</div><input id="reg-ep" placeholder="https://api.example.com/v1"></div>
+      <div class="field"><div class="field-label">Description</div><textarea id="reg-desc" placeholder="What does your API return?"></textarea></div>
+      <div style="padding:11px 13px;background:var(--blue-d);border:1px solid var(--blue-b);border-radius:var(--r)">
+        <div class="c-blue mono" style="font-size:9px;letter-spacing:0.1em;margin-bottom:5px">PRICING</div>
+        <p class="c3 f13" style="line-height:1.6">Fixed <strong style="color:var(--t1)">$0.001 USDC</strong> per call. Payments settle instantly on Arc Testnet.</p>
+      </div>
+    </div>`;
+  $('modal-footer').innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitRegister()">Register</button>`;
+  $('modal').style.display = 'flex';
+}
+
+function closeModal() { $('modal').style.display = 'none'; }
+
+function submitRegister() {
+  const name = $('reg-name').value.trim(), ep = $('reg-ep').value.trim();
+  if (!name || !ep) { toast('Name and endpoint required', 'warn'); return; }
+  const api = { id: 'api-' + Date.now(), name, ep, desc: $('reg-desc').value.trim(), cat: $('reg-cat').value, calls: 0, rev: 0 };
+  S.myApis.push(api); S.apis.push(api);
+  closeModal(); renderMyApis();
+  if (S.page === 'marketplace') renderMarket();
+  toast(name + ' registered');
+}
+
+function copyText(text, msg) { navigator.clipboard && navigator.clipboard.writeText(text); toast(msg || 'Copied'); }
+
+// ── INIT ─────────────────────────────────────
+renderMarket();
+renderWallet();
+const initSel = $('play-api');
+if (initSel) { initSel.innerHTML = S.apis.map(a => `<option value="${a.id}">${a.name}</option>`).join(''); onApiChange(); }
+if (S.key && $('play-key')) $('play-key').value = S.key;
 </script>
 </body>
 </html>
