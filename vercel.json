@@ -1,25 +1,23 @@
 {
   "version": 2,
   "builds": [
-    { "src": "public/index.html", "use": "@vercel/static" },
-    { "src": "api/*.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/public/index.html" }
-  ],
-  "crons": [
     {
-      "path": "/api/webhook-worker",
-      "schedule": "* * * * *"
+      "src": "public/index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
     }
   ],
-  "env": {
-    "SUPABASE_URL":         "@supabase_url",
-    "SUPABASE_ANON_KEY":    "@supabase_anon_key",
-    "CIRCLE_API_KEY":       "@circle_api_key",
-    "CIRCLE_ENTITY_SECRET": "@circle_entity_secret",
-    "PLATFORM_ARC_ADDRESS": "@platform_arc_address",
-    "CRON_SECRET":          "@cron_secret"
-  }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
+    }
+  ]
 }
