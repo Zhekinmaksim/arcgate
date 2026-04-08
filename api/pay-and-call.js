@@ -18,7 +18,7 @@ import { ethers } from 'ethers';
 const ARC_RPC      = 'https://rpc.testnet.arc.network';
 const ARC_CHAIN_ID = 5042002;
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
-const PRICE_WEI    = BigInt('1000000000000000'); // 0.001 USDC (18 decimals)
+const PRICE_WEI    = BigInt('1000'); // 0.001 USDC (18 decimals)
 
 const ERC20_ABI = [
   'function transfer(address to, uint256 amount) returns (bool)',
