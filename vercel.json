@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "regions": [
-    "bom1"
-  ],
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 30
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
