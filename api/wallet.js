@@ -31,7 +31,7 @@ async function onchainBalance(address) {
     });
     const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, provider);
     const raw  = await usdc.balanceOf(address);
-    return parseFloat(ethers.formatUnits(raw, 18));
+    return parseFloat(ethers.formatUnits(raw, 6));
   } catch {
     return null;
   }
