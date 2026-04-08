@@ -1,9 +1,12 @@
 {
-  "name": "agentpay",
+  "name": "arcgate",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
     "ethers": "^6.13.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
