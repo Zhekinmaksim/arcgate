@@ -1408,7 +1408,12 @@ function submitRegister() {
   const name = $('reg-name').value.trim(), ep = $('reg-ep').value.trim();
   if (!name || !ep) { toast('Name and endpoint required', 'warn'); return; }
   const customId = $('reg-id') ? $('reg-id').value.trim() : '';
-  const api = { id: customId || ('api-' + Date.now()), name, ep, desc: $('reg-desc').value.trim(), cat: $('reg-cat').value, calls: 0, rev: 0 };
+  // Known parameter templates
+  const knownParams = {
+    'arc-stats-1': { ex: '{}', hint: 'No parameters needed — returns live Arc chain data' },
+  };
+  const known = knownParams[customId] || {};
+  const api = { id: customId || ('api-' + Date.now()), name, ep, desc: $('reg-desc').value.trim(), cat: $('reg-cat').value, calls: 0, rev: 0, ex: known.ex || '{}', hint: known.hint || '' };
   S.myApis.push(api);
   closeModal(); renderMyApis();
   if (S.page === 'marketplace') renderMarket();
